@@ -1,5 +1,3 @@
-package ipcOverSockets;
-
 import java.io.*;
 import java.net.Socket;
 
@@ -7,7 +5,7 @@ import java.net.Socket;
 /**
  * example object for IPC Socket connection
  */
-public class TestIPCOverSockets {
+public class SingleClassModuleExample {
     private static String outputFile = "unidentifiedProcessOutputFile.txt";
     private static String processName = "unidentifiedProcess";
 
