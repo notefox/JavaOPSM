@@ -3,6 +3,10 @@ package ipcOverSockets;
 import java.io.*;
 import java.net.Socket;
 
+
+/**
+ * example object for IPC Socket connection
+ */
 public class TestIPCOverSockets {
     private static String outputFile = "unidentifiedProcessOutputFile.txt";
     private static String processName = "unidentifiedProcess";
@@ -82,8 +86,11 @@ public class TestIPCOverSockets {
                 checkForKeyWord(read);
                 System.out.println(i + "" + read);
                 i++;
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (EOFException e) {
+                System.err.println("Socket Stream EOF , therefore stop this Module");
+                System.exit(51);
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         }
     }
