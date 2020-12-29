@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * standard process with communication over given port
  */
-public class JavaSocketCommunicationProcessRunner extends SimpleProcessRunner {
+public class SocketCommunicationProcessRunner extends SimpleProcessRunner {
 
     private DataInputStream dis;
     private DataOutputStream dos;
@@ -26,8 +26,18 @@ public class JavaSocketCommunicationProcessRunner extends SimpleProcessRunner {
      * @param command list of string which should start the process
      * @param seso ServerSocket for communication
      */
-    public JavaSocketCommunicationProcessRunner(ServerSocket seso, List<String> command) {
+    public SocketCommunicationProcessRunner(ServerSocket seso, List<String> command) {
         super(command);
+        this.seso = seso;
+    }
+
+    /**
+     * constructor for a single line command for a process with a server socket
+     * @param processCommand command to execute
+     * @param seso ServerSocket for communication
+     */
+    public SocketCommunicationProcessRunner(String processCommand, ServerSocket seso) {
+        super(processCommand);
         this.seso = seso;
     }
 
@@ -41,8 +51,10 @@ public class JavaSocketCommunicationProcessRunner extends SimpleProcessRunner {
     }
 
     @Override
-    protected void afterStopProcessEvent() {
-    }
+    protected void afterStopProcessEvent() { }
+
+    @Override
+    protected void afterRestartProcessEvent() { }
 
     /**
      * returns a DataInputStream for reading possible communication
