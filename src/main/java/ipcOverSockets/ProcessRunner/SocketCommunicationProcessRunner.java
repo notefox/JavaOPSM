@@ -26,8 +26,8 @@ public class SocketCommunicationProcessRunner extends SimpleProcessRunner {
      * @param command list of string which should start the process
      * @param seso ServerSocket for communication
      */
-    public SocketCommunicationProcessRunner(ServerSocket seso, List<String> command) {
-        super(command);
+    public SocketCommunicationProcessRunner(String name, ServerSocket seso, List<String> command) {
+        super(name, command);
         this.seso = seso;
     }
 
@@ -36,8 +36,8 @@ public class SocketCommunicationProcessRunner extends SimpleProcessRunner {
      * @param processCommand command to execute
      * @param seso ServerSocket for communication
      */
-    public SocketCommunicationProcessRunner(String processCommand, ServerSocket seso) {
-        super(processCommand);
+    public SocketCommunicationProcessRunner(String name, String processCommand, ServerSocket seso) {
+        super(name, processCommand);
         this.seso = seso;
     }
 

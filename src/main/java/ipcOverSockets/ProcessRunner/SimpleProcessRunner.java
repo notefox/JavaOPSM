@@ -1,6 +1,7 @@
 package ipcOverSockets.ProcessRunner;
 
 import ipcOverSockets.ProcessExceptions.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +11,11 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public abstract class SimpleProcessRunner implements ProcessRunner {
+
+    /**
+     * process name
+     */
+    private final String name;
 
     /**
      * process builder
@@ -25,7 +31,8 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
      * simple Constructor with a command List
      * @param processCommand commandList
      */
-    public SimpleProcessRunner(List<String> processCommand) {
+    public SimpleProcessRunner(@NotNull String name, List<String> processCommand) {
+        this.name = name;
         this.pb = new ProcessBuilder();
         pb.command(processCommand);
     }
@@ -34,7 +41,8 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
      * constructor for direct ProcessBuilderInjection
      * @param pb ProcessBuilder
      */
-    public SimpleProcessRunner(ProcessBuilder pb) {
+    public SimpleProcessRunner(@NotNull String name, ProcessBuilder pb) {
+        this.name = name;
         this.pb = pb;
     }
 
@@ -42,7 +50,8 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
      * single command process constructor
      * @param processCommand command
      */
-    public SimpleProcessRunner(String processCommand) {
+    public SimpleProcessRunner(@NotNull String name, String processCommand) {
+        this.name = name;
         this.pb = new ProcessBuilder();
         pb.command(processCommand);
     }
@@ -51,7 +60,8 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
      * Strings of process commands, directly used for ProcessBuilder
      * @param processCommands commands and arguments
      */
-    public SimpleProcessRunner(String... processCommands) {
+    public SimpleProcessRunner(@NotNull String name, String... processCommands) {
+        this.name = name;
         this.pb = new ProcessBuilder();
         this.pb.command(processCommands);
     }
@@ -65,7 +75,8 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
      * @param p Process to reproduce
      * @throws ProcessCouldNotBeReproduced is thrown, if the process wasn't usable or already died
      */
-    public SimpleProcessRunner(Process p) throws ProcessCouldNotBeReproduced {
+    public SimpleProcessRunner(@NotNull String name, Process p) throws ProcessCouldNotBeReproduced {
+        this.name = name;
         if (p.info().command().isPresent() || p.info().arguments().isPresent()) {
             String command = p.info().command().get();
             String[] arguments = p.info().arguments().get();
@@ -211,5 +222,13 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
             throw new NullPointerException();
         }
         return process.getErrorStream();
+    }
+
+    /**
+     * process name getter
+     * @return String
+     */
+    public String getName() {
+        return name;
     }
 }

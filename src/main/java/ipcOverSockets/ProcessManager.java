@@ -3,23 +3,22 @@ package ipcOverSockets;
 import ipcOverSockets.ProcessExceptions.ProcessIsNotAliveException;
 import ipcOverSockets.ProcessRunner.ProcessRunner;
 import ipcOverSockets.ProcessRunner.SimpleProcessRunner;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class ProcessManager {
 
-    private HashMap<Long, ProcessRunner> processes = new HashMap<>();
+    private final HashMap<String, SimpleProcessRunner> processes = new HashMap<>();
 
-    public void addModule(ProcessRunner pr) throws ProcessIsNotAliveException {
-        processes.put(pr.getPID(), pr);
+    public void addModule(@NotNull String name, @NotNull SimpleProcessRunner pr) {
+        processes.put(name, pr);
     }
 
-    public List<ProcessRunner> getAllModules() {
-        ArrayList<ProcessRunner> returner = new ArrayList<>();
-        processes.keySet().stream().map((x) -> processes.get(x)).forEach(returner::add);
+
+    public List<SimpleProcessRunner> getAllModules() {
+        ArrayList<SimpleProcessRunner> returner = new ArrayList<>();
+        processes.keySet().stream().map(processes::get).forEach(returner::add);
         return returner;
     }
 }

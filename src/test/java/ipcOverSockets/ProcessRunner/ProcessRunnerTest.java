@@ -163,7 +163,7 @@ class ProcessRunnerTest {
         when(builderMock.start()).thenReturn(processMock);
         when(processMock.isAlive()).thenReturn(true);
 
-        pr = new SimpleProcessRunner(builderMock) {
+        pr = new SimpleProcessRunner("test", builderMock) {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -191,8 +191,8 @@ class ProcessRunnerTest {
     }
 
     @Test
-    void giveReproducibleProcess_goodTest() throws ProcessCouldNotBeReproduced, ProcessCouldNotStartException,
-            ProcessAlreadyStartedException, IOException {
+    void giveReproducibleProcess_goodTest() throws ProcessCouldNotStartException,
+            ProcessAlreadyStartedException, IOException, ProcessCouldNotBeReproduced {
 
         Process processMock = mock(Process.class);
         when(processMock.info()).thenReturn(new ProcessHandle.Info() {
@@ -226,7 +226,7 @@ class ProcessRunnerTest {
                 return Optional.empty();
             }
         });
-        pr = new SimpleProcessRunner(processMock) {
+        pr = new SimpleProcessRunner("test", processMock) {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -282,7 +282,7 @@ class ProcessRunnerTest {
                 return Optional.empty();
             }
         });
-        assertThrows(ProcessCouldNotBeReproduced.class, () -> pr = new SimpleProcessRunner(processMock) {
+        assertThrows(ProcessCouldNotBeReproduced.class, () -> pr = new SimpleProcessRunner("test", processMock) {
             @Override
             protected void afterStartProcessEvent() {
 

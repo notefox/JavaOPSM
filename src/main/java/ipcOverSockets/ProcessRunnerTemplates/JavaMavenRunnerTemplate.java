@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class JavaMavenRunnerTemplate {
-    public static void main(String[] args) {
+    public static SimpleProcessRunner buildTemplate() {
         String pathToMVNProject = "modules/Projects/mavenExampleProject";
 
         // create script file
@@ -43,7 +43,7 @@ public class JavaMavenRunnerTemplate {
         SimpleProcessRunner spc = null;
         try {
             ProcessBuilder pb = sc.buildRunnableProcessBuilder();
-            spc = new SimpleProcessRunner(pb) {
+            spc = new SimpleProcessRunner("maven template" ,pb) {
                 @Override
                 protected void afterStartProcessEvent() {
                     //
@@ -62,19 +62,6 @@ public class JavaMavenRunnerTemplate {
         } catch (IOException | InterpreterOrScriptNotDefinedException e) {
             e.printStackTrace();
         }
-
-        try {
-            assert spc != null;
-            spc.startProcess();
-        } catch (IOException | ProcessCouldNotStartException | ProcessAlreadyStartedException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            spc.waitForProcess();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
+        return spc;
     }
 }
