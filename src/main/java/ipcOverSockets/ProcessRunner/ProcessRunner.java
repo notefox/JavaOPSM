@@ -6,6 +6,7 @@ import ipcOverSockets.ProcessExceptions.ProcessCouldNotStopException;
 import ipcOverSockets.ProcessExceptions.ProcessIsNotAliveException;
 
 import java.io.IOException;
+import java.util.List;
 
 public interface ProcessRunner {
 
@@ -16,6 +17,13 @@ public interface ProcessRunner {
      * @throws ProcessAlreadyStartedException is thrown, if the process was already alive and needs to be stopped first
      */
     void startProcess() throws IOException, ProcessCouldNotStartException, ProcessAlreadyStartedException;
+
+    /**
+     * Process starter without running test afterwards (more useful if process is very short)
+     * @throws IOException IOException may be thrown if being asked if alive
+     * @throws ProcessAlreadyStartedException is thrown, if the process was already alive and needs to be stopped first
+     */
+    void startProcessWithoutRunningStartTest() throws IOException, ProcessCouldNotStartException, ProcessAlreadyStartedException;
 
     /**
      * Process stopper
@@ -38,6 +46,18 @@ public interface ProcessRunner {
     void restartProcess() throws ProcessIsNotAliveException, ProcessCouldNotStopException, IOException, ProcessCouldNotStartException, ProcessAlreadyStartedException;
 
     /**
+     * Process Restarted
+     *
+     * simply calls stopProcess and startProcess after one another
+     *
+     * @throws ProcessIsNotAliveException is thrown, if the process wasn't alive in the first place
+     * @throws ProcessCouldNotStopException is thrown, if the process wasn't able to be stopped
+     * @throws IOException can be thrown, when asking the process if it's alive
+     * @throws ProcessAlreadyStartedException is thrown if the process was already started by another source while restarting
+     */
+    void restartProcessWithoutRunningStartTest() throws ProcessIsNotAliveException, ProcessCouldNotStopException, IOException, ProcessAlreadyStartedException;
+
+    /**
      * returns a boolean for the process is alive call
      * (also returns false, even if Process is not defined yet)
      * @return boolean
@@ -50,4 +70,22 @@ public interface ProcessRunner {
      * @throws InterruptedException is thrown, if the waitFor method call was interrupted by an interrupt
      */
     void waitForProcess() throws ProcessIsNotAliveException, InterruptedException;
+
+    /**
+     * getter for process ID
+     * @return long
+     */
+    long getPID() throws ProcessIsNotAliveException;
+
+    /**
+     * returns Process Information handle
+     * @return ProcessHandle.Info
+     */
+    ProcessHandle.Info getProcessInfo();
+
+    /**
+     * gets executed command
+     * @return argument List<String>
+     */
+    List<String> getCommand();
 }
