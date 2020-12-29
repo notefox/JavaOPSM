@@ -1,29 +1,86 @@
 package ipcOverSockets.ProcessRunner;
 
-import ipcOverSockets.ProcessExceptions.ProcessAlreadyStartedException;
-import ipcOverSockets.ProcessExceptions.ProcessCouldNotStartException;
-import ipcOverSockets.ProcessExceptions.ProcessCouldNotStopException;
-import ipcOverSockets.ProcessExceptions.ProcessIsNotAliveException;
+import ipcOverSockets.ProcessExceptions.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public abstract class SimpleProcessRunner implements ProcessRunner {
 
+    /**
+     * process builder
+     */
     private final ProcessBuilder pb;
+
+    /**
+     * currently/last running process
+     */
     private Process process;
 
+    /**
+     * simple Constructor with a command List
+     * @param processCommand commandList
+     */
     public SimpleProcessRunner(List<String> processCommand) {
         this.pb = new ProcessBuilder();
         pb.command(processCommand);
     }
+
+    /**
+     * constructor for direct ProcessBuilderInjection
+     * @param pb ProcessBuilder
+     */
     public SimpleProcessRunner(ProcessBuilder pb) {
         this.pb = pb;
     }
+
+    /**
+     * single command process constructor
+     * @param processCommand command
+     */
     public SimpleProcessRunner(String processCommand) {
         this.pb = new ProcessBuilder();
         pb.command(processCommand);
+    }
+
+    /**
+     * Strings of process commands, directly used for ProcessBuilder
+     * @param processCommands commands and arguments
+     */
+    public SimpleProcessRunner(String... processCommands) {
+        this.pb = new ProcessBuilder();
+        this.pb.command(processCommands);
+    }
+
+    /**
+     * ProcessBuilder reconstructor Constructor
+     * this only works if the Process is still running
+     *
+     * (the Process will continue running till the end)
+     *
+     * @param p Process to reproduce
+     * @throws ProcessCouldNotBeReproduced is thrown, if the process wasn't usable or already died
+     */
+    public SimpleProcessRunner(Process p) throws ProcessCouldNotBeReproduced {
+        if (p.info().command().isPresent() || p.info().arguments().isPresent()) {
+            String command = p.info().command().get();
+            String[] arguments = p.info().arguments().get();
+            ProcessBuilder reproduced = new ProcessBuilder();
+            List<String> commandList = new ArrayList<>();
+            commandList.add(command);
+            commandList.addAll(Arrays.asList(arguments));
+            reproduced.command(commandList);
+
+            this.pb = reproduced;
+            this.process = p;
+        } else {
+            throw new ProcessCouldNotBeReproduced("process wasn't reproducible because either the process wasn't " +
+                    "usable or the process already died before it could have been reproduced");
+        }
     }
 
     @Override
@@ -58,13 +115,18 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
     protected abstract void afterStartProcessEvent();
 
     @Override
-    public void stopProcess() throws ProcessIsNotAliveException, ProcessCouldNotStopException {
-        if (!process.isAlive()) {
+    public void stopProcess() throws ProcessIsNotAliveException, ProcessCouldNotStopException, InterruptedException {
+        if (!isProcessAlive()) {
             throw new ProcessIsNotAliveException();
         }
         process.destroy();
-        if (process.isAlive()) {
-            throw new ProcessCouldNotStopException();
+        if (isProcessAlive()) {
+            process.destroyForcibly();
+            process.waitFor(15, TimeUnit.MILLISECONDS);
+
+            if (isProcessAlive()) {
+                throw new ProcessCouldNotStopException();
+            }
         }
         afterStopProcessEvent();
     }
@@ -76,7 +138,7 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
 
     @Override
     public void restartProcess() throws ProcessIsNotAliveException, ProcessCouldNotStopException, IOException,
-            ProcessCouldNotStartException, ProcessAlreadyStartedException {
+            ProcessCouldNotStartException, ProcessAlreadyStartedException, InterruptedException {
         stopProcess();
         startProcess();
         afterRestartProcessEvent();
@@ -84,7 +146,7 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
 
     @Override
     public void restartProcessWithoutRunningStartTest() throws ProcessIsNotAliveException,
-            ProcessCouldNotStopException, IOException, ProcessAlreadyStartedException {
+            ProcessCouldNotStopException, IOException, ProcessAlreadyStartedException, InterruptedException {
         stopProcess();
         startProcessWithoutRunningStartTest();
         afterRestartProcessEvent();

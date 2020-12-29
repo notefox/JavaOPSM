@@ -29,8 +29,9 @@ public interface ProcessRunner {
      * Process stopper
      * @throws ProcessIsNotAliveException is thrown, if the process wasn't alive in the first place
      * @throws ProcessCouldNotStopException is thrown, if the process did not stop after destroying
+     * @throws InterruptedException is thrown, if the process of waiting for the process to destroy itself, was interrupted
      */
-    void stopProcess() throws ProcessIsNotAliveException, ProcessCouldNotStopException;
+    void stopProcess() throws ProcessIsNotAliveException, ProcessCouldNotStopException, InterruptedException;
 
     /**
      * Process Restarted
@@ -43,7 +44,7 @@ public interface ProcessRunner {
      * @throws ProcessCouldNotStartException is thrown, if the process wasn't able to start up again
      * @throws ProcessAlreadyStartedException is thrown if the process was already started by another source while restarting
      */
-    void restartProcess() throws ProcessIsNotAliveException, ProcessCouldNotStopException, IOException, ProcessCouldNotStartException, ProcessAlreadyStartedException;
+    void restartProcess() throws ProcessIsNotAliveException, ProcessCouldNotStopException, IOException, ProcessCouldNotStartException, ProcessAlreadyStartedException, InterruptedException;
 
     /**
      * Process Restarted
@@ -55,7 +56,7 @@ public interface ProcessRunner {
      * @throws IOException can be thrown, when asking the process if it's alive
      * @throws ProcessAlreadyStartedException is thrown if the process was already started by another source while restarting
      */
-    void restartProcessWithoutRunningStartTest() throws ProcessIsNotAliveException, ProcessCouldNotStopException, IOException, ProcessAlreadyStartedException;
+    void restartProcessWithoutRunningStartTest() throws ProcessIsNotAliveException, ProcessCouldNotStopException, IOException, ProcessAlreadyStartedException, InterruptedException;
 
     /**
      * returns a boolean for the process is alive call
