@@ -18,11 +18,9 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
         this.pb = new ProcessBuilder();
         pb.command(processCommand);
     }
-
     public SimpleProcessRunner(ProcessBuilder pb) {
         this.pb = pb;
     }
-
     public SimpleProcessRunner(String processCommand) {
         this.pb = new ProcessBuilder();
         pb.command(processCommand);
@@ -103,7 +101,7 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
     }
 
     @Override
-    public void waitForProcess() throws ProcessIsNotAliveException, InterruptedException {
+    public void waitForProcess() throws InterruptedException {
         if (!isProcessAlive()) {
             return;
         }

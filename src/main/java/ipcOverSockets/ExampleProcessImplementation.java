@@ -1,8 +1,10 @@
 package ipcOverSockets;
 
+import ipcOverSockets.ProcessExceptions.InterpreterOrScriptNotDefinedException;
 import ipcOverSockets.ProcessExceptions.ProcessAlreadyStartedException;
 import ipcOverSockets.ProcessExceptions.ProcessCouldNotStartException;
 import ipcOverSockets.ProcessExceptions.ProcessIsNotAliveException;
+import ipcOverSockets.ProcessRunner.ScriptCreator;
 import ipcOverSockets.ProcessRunner.SimpleProcessRunner;
 import ipcOverSockets.ProcessRunner.SocketCommunicationProcessRunner;
 
@@ -10,7 +12,6 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 
-@SuppressWarnings("ResultOfMethodCallIgnored")
 public class ExampleProcessImplementation {
 
     public static void main(String[] args) {
@@ -69,50 +70,71 @@ public class ExampleProcessImplementation {
         }
     }
 
+    @SuppressWarnings("CommentedOutCode")
     private static void exampleMavenProjectModuleRun() {
         String pathToMVNProject = "modules/Projects/mavenExampleProject";
 
         // create script file
-        File scriptGeneration = new File("scripts");
-        scriptGeneration.mkdir();
-        File script = new File(scriptGeneration.getPath() + "/mvn_compile_script.sh");
-        try { script.createNewFile(); } catch (IOException e) { e.printStackTrace(); }
-
-        // create necessary script
-        StringBuilder sb = new StringBuilder();
-        sb.append("cd ").append(pathToMVNProject).append(" || exit\n");
-        sb.append("mvn install\n");
-        try {
-            FileWriter fw = new FileWriter(script);
-            fw.write(sb.toString());
-            fw.flush();
-            fw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        ArrayList<String> commandList = new ArrayList<>();
-        commandList.add("bash");
-        commandList.add(script.getPath());
-
-        SimpleProcessRunner spr = new SimpleProcessRunner(commandList) {
+        File script = new File("scripts/mvn_compile_script.sh");
+        ScriptCreator sc = new ScriptCreator("bash", script) {
             @Override
-            protected void afterStartProcessEvent() {
-                //
-            }
-
-            @Override
-            protected void afterStopProcessEvent() {
-                //
-            }
-
-            @Override
-            protected void afterRestartProcessEvent() {
-
+            public void afterRun(Process process) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                BufferedReader be = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                try {
+                    while (br.ready()) {
+                        System.out.println(br.readLine());
+                    }
+                    while (be.ready()) {
+                        System.err.println(be.readLine());
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         };
 
+        // create necessary script
+        sc.addLineToScript("cd " + pathToMVNProject + " || exit");
+        sc.addLineToScript("mvn install\n");
+        sc.addLineToScript("java -jar target/mavenExampleProject-0.1.jar");
+
+        // sc.addLineToScript("pwd");
+
+        // either run it directly and wait for it
         try {
+            sc.runDirectly();
+        } catch (IOException | InterpreterOrScriptNotDefinedException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // or just start it and let it do it's job
+        // sc.startDirectly();
+
+        // or just build a SimpleProcessRunner out of it
+        /*SimpleProcessRunner spr = null;
+        try {
+            spr = new SimpleProcessRunner(sc.buildRunnableProcessBuilder()) {
+                @Override
+                protected void afterStartProcessEvent() {
+                    //
+                }
+
+                @Override
+                protected void afterStopProcessEvent() {
+                    //
+                }
+
+                @Override
+                protected void afterRestartProcessEvent() {
+
+                }
+            };
+        } catch (IOException | InterpreterOrScriptNotDefinedException e) {
+            e.printStackTrace();
+        }
+        try {
+            assert spr != null;
             spr.startProcessWithoutRunningStartTest();
             spr.waitForProcess();
             InputStream is = spr.getProcessInputStream();
@@ -130,7 +152,16 @@ public class ExampleProcessImplementation {
             }
 
         } catch (IOException | ProcessAlreadyStartedException | ProcessIsNotAliveException | InterruptedException e) {
+            InputStream es = spr.getProcessErrorStream();
+            BufferedReader be = new BufferedReader(new InputStreamReader(es));
+            try {
+                while (be.ready()) {
+                    System.out.println(be.readLine());
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
             e.printStackTrace();
-        }
+        }*/
     }
 }

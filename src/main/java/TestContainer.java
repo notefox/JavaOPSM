@@ -1,7 +1,8 @@
+import java.io.File;
 import java.io.IOException;
 
 public class TestContainer {
     public static void main(String[] args) {
-        System.out.println(new ProcessBuilder().command("/bin/pwd").command());
+        System.out.println(new File("modules/SingleFile/Python/singleFilePythonExample.py").getParent());
     }
 }
