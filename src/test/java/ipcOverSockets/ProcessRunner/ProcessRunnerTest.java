@@ -30,7 +30,7 @@ class ProcessRunnerTest {
     void startStopProcess_goodTest() throws
             ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException,
             ProcessIsNotAliveException, ProcessCouldNotStopException, InterruptedException {
-        pr = new SimpleProcessRunner("sleep", "2") {
+        pr = new SimpleProcessRunner("test", "sleep", "2") {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -55,7 +55,7 @@ class ProcessRunnerTest {
     @Test
     void startWaitProcess_goodTest() throws ProcessCouldNotStartException, ProcessAlreadyStartedException,
             IOException, InterruptedException, ProcessIsNotAliveException {
-        pr = new SimpleProcessRunner("sleep", "2") {
+        pr = new SimpleProcessRunner("test", "sleep", "2") {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -79,7 +79,7 @@ class ProcessRunnerTest {
 
     @Test
     void reuseProcess_goodTest() throws ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException, InterruptedException, ProcessIsNotAliveException {
-        pr = new SimpleProcessRunner("sleep", "2") {
+        pr = new SimpleProcessRunner("test", "sleep", "2") {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -110,7 +110,7 @@ class ProcessRunnerTest {
 
     @Test
     void restartProcess_goodTest() throws ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException, ProcessCouldNotStopException, ProcessIsNotAliveException, InterruptedException {
-        pr = new SimpleProcessRunner("sleep", "2") {
+        pr = new SimpleProcessRunner("test", "sleep", "2") {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -136,7 +136,7 @@ class ProcessRunnerTest {
 
     @Test
     void giveBadProcessCommand_badTest() throws ProcessCouldNotStartException, ProcessAlreadyStartedException {
-        pr = new SimpleProcessRunner("nothing to execute here") {
+        pr = new SimpleProcessRunner("test", "nothing to execute here") {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -182,12 +182,12 @@ class ProcessRunnerTest {
 
         pr.startProcess();
         assertTrue(pr.isProcessAlive());
-        verify(builderMock, times(1)).start();
-        verify(processMock, times(1)).isAlive();
+        verify(builderMock, atLeast(1)).start();
+        verify(processMock, atLeast(1)).isAlive();
 
         assertThrows(ProcessCouldNotStopException.class,() -> pr.stopProcess());
-        verify(processMock, times(1)).destroy();
-        verify(processMock, times(1)).destroyForcibly();
+        verify(processMock, atLeast(1)).destroy();
+        verify(processMock, atLeast(1)).destroyForcibly();
     }
 
     @Test
