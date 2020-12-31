@@ -1,6 +1,7 @@
 package ipcOverSockets.ProcessRunner;
 
 import ipcOverSockets.ProcessExceptions.ProcessIsNotAliveException;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -26,8 +27,8 @@ public class SocketCommunicationProcessRunner extends SimpleProcessRunner {
      * @param command list of string which should start the process
      * @param seso ServerSocket for communication
      */
-    public SocketCommunicationProcessRunner(String name, ServerSocket seso, List<String> command) {
-        super(name, command);
+    public SocketCommunicationProcessRunner(@NotNull String name, @NotNull ServerSocket seso, @NotNull List<String> command) {
+        super(name, ProcessRunnerType.SOCKET_COMMUNICATION_RUNNER, command);
         this.seso = seso;
     }
 
@@ -36,8 +37,13 @@ public class SocketCommunicationProcessRunner extends SimpleProcessRunner {
      * @param processCommand command to execute
      * @param seso ServerSocket for communication
      */
-    public SocketCommunicationProcessRunner(String name, String processCommand, ServerSocket seso) {
-        super(name, processCommand);
+    public SocketCommunicationProcessRunner(@NotNull String name, @NotNull String processCommand, @NotNull ServerSocket seso) {
+        super(name, ProcessRunnerType.SOCKET_COMMUNICATION_RUNNER, processCommand);
+        this.seso = seso;
+    }
+
+    public SocketCommunicationProcessRunner(@NotNull String name, @NotNull ProcessBuilder pb, @NotNull ServerSocket seso) {
+        super(name, ProcessRunnerType.SOCKET_COMMUNICATION_RUNNER, pb);
         this.seso = seso;
     }
 
@@ -55,6 +61,9 @@ public class SocketCommunicationProcessRunner extends SimpleProcessRunner {
 
     @Override
     protected void afterRestartProcessEvent() { }
+
+    @Override
+    protected void afterFinishProcessEvent() { }
 
     /**
      * returns a DataInputStream for reading possible communication

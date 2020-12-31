@@ -72,8 +72,9 @@ public abstract class ScriptCreator {
      * (meaning, they were null or empty)
      * (since both interpreter variable and script variable are final in here, this ScriptGenerator isn't really usable)
      * @throws InterruptedException is thrown, if "wait for script" was interrupted
+     * @return ran Process
      */
-    public void runDirectly() throws IOException, InterpreterOrScriptNotDefinedException, InterruptedException {
+    public Process runDirectly() throws IOException, InterpreterOrScriptNotDefinedException, InterruptedException {
         // null-save String.equals()
         if((interpreter == null || scriptPath == null) || (Objects.equals(interpreter, "") || Objects.equals(scriptPath.getPath(), ""))) {
             throw new InterpreterOrScriptNotDefinedException();
@@ -82,6 +83,7 @@ public abstract class ScriptCreator {
         Process process = buildRunnableProcessBuilder().start();
         process.waitFor();
         afterRun(process);
+        return process;
     }
 
     /**
@@ -90,14 +92,15 @@ public abstract class ScriptCreator {
      * @throws InterpreterOrScriptNotDefinedException is thrown, if the Interpreter or Script weren't given correctly
      * (meaning, they were null or empty)
      * (since both interpreter variable and script variable are final in here, this ScriptGenerator isn't really usable)
+     * @return now running Process
      */
-    public void startDirectly() throws IOException, InterpreterOrScriptNotDefinedException {
+    public Process startDirectly() throws IOException, InterpreterOrScriptNotDefinedException {
         // null-save String.equals()
         if((interpreter == null || scriptPath == null) || (Objects.equals(interpreter, "") || Objects.equals(scriptPath.getPath(), ""))) {
             throw new InterpreterOrScriptNotDefinedException();
         }
         buildScript();
-        buildRunnableProcessBuilder().start();
+        return buildRunnableProcessBuilder().start();
     }
 
     /**
@@ -121,5 +124,15 @@ public abstract class ScriptCreator {
         fw.write(sb.toString());
         fw.flush();
         fw.close();
+    }
+
+    @Override
+    public String toString() {
+        return "ScriptCreator{" +
+                "interpreter='" + interpreter + '\'' +
+                ", scriptPath=" + scriptPath +
+                ", script=" + script +
+                ", scriptLines=" + scriptLines +
+                '}';
     }
 }

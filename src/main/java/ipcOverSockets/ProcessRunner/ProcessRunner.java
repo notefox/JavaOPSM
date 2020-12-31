@@ -1,11 +1,9 @@
 package ipcOverSockets.ProcessRunner;
 
-import ipcOverSockets.ProcessExceptions.ProcessAlreadyStartedException;
-import ipcOverSockets.ProcessExceptions.ProcessCouldNotStartException;
-import ipcOverSockets.ProcessExceptions.ProcessCouldNotStopException;
-import ipcOverSockets.ProcessExceptions.ProcessIsNotAliveException;
+import ipcOverSockets.ProcessExceptions.*;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 public interface ProcessRunner {
@@ -73,10 +71,26 @@ public interface ProcessRunner {
     void waitForProcess() throws ProcessIsNotAliveException, InterruptedException;
 
     /**
+     * calls the waitFor method for the currently running Process for a specific time,
+     * after that the process will be killed
+     * @param time time (in ms) to wait till kill
+     * @throws ProcessIsNotAliveException is thrown, if Process isn't running, therefore it can't wait for it to finish
+     * @throws InterruptedException is thrown, if the waitFor method call was interrupted by an interrupt
+     */
+    void waitForProcess(long time) throws ProcessIsNotAliveException, InterruptedException, ProcessCouldNotStopException;
+
+    /**
      * getter for process ID
      * @return long
      */
     long getPID() throws ProcessIsNotAliveException;
+
+    /**
+     * returns exit code of the process if the process is dead
+     * @return exit code
+     * @throws ProcessNotExitedYetException if thrown, if process was still alive, therefore has no exit code
+     */
+    int getLastExitCode() throws ProcessNotExitedYetException;
 
     /**
      * returns Process Information handle

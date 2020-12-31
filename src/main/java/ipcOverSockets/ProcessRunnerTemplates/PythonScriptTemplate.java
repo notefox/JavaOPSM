@@ -1,5 +1,6 @@
 package ipcOverSockets.ProcessRunnerTemplates;
 
+import ipcOverSockets.ProcessRunner.ProcessRunnerType;
 import ipcOverSockets.ProcessRunner.SimpleProcessRunner;
 
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ public class PythonScriptTemplate {
         commandList.add("singleFile/python");
         commandList.add("modules/SingleFile/Python/singleFilePythonExample.py");
         commandList.add("someFile.txt");
-        SimpleProcessRunner spr = new SimpleProcessRunner("python template", commandList) {
+        SimpleProcessRunner spr = new SimpleProcessRunner("python template", ProcessRunnerType.SCRIPT_RUNNER, commandList) {
             @Override
             protected void afterStartProcessEvent() {
             }
@@ -21,6 +22,11 @@ public class PythonScriptTemplate {
 
             @Override
             protected void afterRestartProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterFinishProcessEvent() {
 
             }
         };

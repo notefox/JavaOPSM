@@ -30,7 +30,7 @@ class ProcessRunnerTest {
     void startStopProcess_goodTest() throws
             ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException,
             ProcessIsNotAliveException, ProcessCouldNotStopException, InterruptedException {
-        pr = new SimpleProcessRunner("test", "sleep", "2") {
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, "sleep", "2") {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -43,6 +43,11 @@ class ProcessRunnerTest {
 
             @Override
             protected void afterRestartProcessEvent() {
+                //
+            }
+
+            @Override
+            protected void afterFinishProcessEvent() {
                 //
             }
         };
@@ -55,7 +60,7 @@ class ProcessRunnerTest {
     @Test
     void startWaitProcess_goodTest() throws ProcessCouldNotStartException, ProcessAlreadyStartedException,
             IOException, InterruptedException, ProcessIsNotAliveException {
-        pr = new SimpleProcessRunner("test", "sleep", "2") {
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, "sleep", "2") {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -68,6 +73,11 @@ class ProcessRunnerTest {
 
             @Override
             protected void afterRestartProcessEvent() {
+                //
+            }
+
+            @Override
+            protected void afterFinishProcessEvent() {
                 //
             }
         };
@@ -79,7 +89,7 @@ class ProcessRunnerTest {
 
     @Test
     void reuseProcess_goodTest() throws ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException, InterruptedException, ProcessIsNotAliveException {
-        pr = new SimpleProcessRunner("test", "sleep", "2") {
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, "sleep", "2") {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -92,6 +102,11 @@ class ProcessRunnerTest {
 
             @Override
             protected void afterRestartProcessEvent() {
+                //
+            }
+
+            @Override
+            protected void afterFinishProcessEvent() {
                 //
             }
         };
@@ -110,7 +125,7 @@ class ProcessRunnerTest {
 
     @Test
     void restartProcess_goodTest() throws ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException, ProcessCouldNotStopException, ProcessIsNotAliveException, InterruptedException {
-        pr = new SimpleProcessRunner("test", "sleep", "2") {
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM,  "sleep", "2") {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -123,6 +138,11 @@ class ProcessRunnerTest {
 
             @Override
             protected void afterRestartProcessEvent() {
+                //
+            }
+
+            @Override
+            protected void afterFinishProcessEvent() {
                 //
             }
         };
@@ -136,7 +156,7 @@ class ProcessRunnerTest {
 
     @Test
     void giveBadProcessCommand_badTest() throws ProcessCouldNotStartException, ProcessAlreadyStartedException {
-        pr = new SimpleProcessRunner("test", "nothing to execute here") {
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, "nothing to execute here") {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -149,6 +169,11 @@ class ProcessRunnerTest {
 
             @Override
             protected void afterRestartProcessEvent() {
+                //
+            }
+
+            @Override
+            protected void afterFinishProcessEvent() {
                 //
             }
         };
@@ -163,7 +188,7 @@ class ProcessRunnerTest {
         when(builderMock.start()).thenReturn(processMock);
         when(processMock.isAlive()).thenReturn(true);
 
-        pr = new SimpleProcessRunner("test", builderMock) {
+        pr = new SimpleProcessRunner("test",ProcessRunnerType.CUSTOM, builderMock) {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -176,6 +201,11 @@ class ProcessRunnerTest {
 
             @Override
             protected void afterRestartProcessEvent() {
+                //
+            }
+
+            @Override
+            protected void afterFinishProcessEvent() {
                 //
             }
         };
@@ -192,7 +222,7 @@ class ProcessRunnerTest {
 
     @Test
     void giveReproducibleProcess_goodTest() throws ProcessCouldNotStartException,
-            ProcessAlreadyStartedException, IOException, ProcessCouldNotBeReproduced {
+            ProcessAlreadyStartedException, IOException, ProcessCouldNotBeReproducedException {
 
         Process processMock = mock(Process.class);
         when(processMock.info()).thenReturn(new ProcessHandle.Info() {
@@ -241,6 +271,11 @@ class ProcessRunnerTest {
             protected void afterRestartProcessEvent() {
                 //
             }
+
+            @Override
+            protected void afterFinishProcessEvent() {
+                //
+            }
         };
         pr.startProcess();
         assertEquals(pr.getProcessInfo().command(), processMock.info().command());
@@ -282,20 +317,25 @@ class ProcessRunnerTest {
                 return Optional.empty();
             }
         });
-        assertThrows(ProcessCouldNotBeReproduced.class, () -> pr = new SimpleProcessRunner("test", processMock) {
+        assertThrows(ProcessCouldNotBeReproducedException.class, () -> pr = new SimpleProcessRunner("test", processMock) {
             @Override
             protected void afterStartProcessEvent() {
-
+                //
             }
 
             @Override
             protected void afterStopProcessEvent() {
-
+                //
             }
 
             @Override
             protected void afterRestartProcessEvent() {
+                //
+            }
 
+            @Override
+            protected void afterFinishProcessEvent() {
+                //
             }
         } );
         verify(processMock, Mockito.times(2)).info();

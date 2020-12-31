@@ -1,15 +1,14 @@
 package ipcOverSockets.ProcessRunner;
 
-import ipcOverSockets.ProcessExceptions.InterpreterOrScriptNotDefinedException;
-import ipcOverSockets.ProcessExceptions.ProcessAlreadyStartedException;
-import ipcOverSockets.ProcessExceptions.ProcessCouldNotStartException;
-import ipcOverSockets.ProcessExceptions.ProcessIsNotAliveException;
+import ipcOverSockets.ProcessExceptions.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class ScriptCreatorTest {
 
@@ -18,7 +17,7 @@ class ScriptCreatorTest {
 	File testFile;
 
 	@BeforeEach
-	void setUp() throws IOException {
+	void setUp() {
 		testInterpreter = "python";
 		testFile = new File("test/testFile.test");
 		testCreator = new ScriptCreator(testInterpreter, testFile) {
@@ -35,10 +34,11 @@ class ScriptCreatorTest {
 	}
 
 	@Test
-	void standardScriptCreatorTest() throws ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException, InterruptedException, ProcessIsNotAliveException, InterpreterOrScriptNotDefinedException {
+	void standardScriptCreatorTestViaExternalProcessRunner_goodTest() throws ProcessAlreadyStartedException, IOException, InterruptedException,
+			InterpreterOrScriptNotDefinedException, ProcessNotExitedYetException {
 		testCreator.addLineToScript("print \"hello world\"");
-		testCreator.addLineToScript("exit(0)");
-		ProcessRunner pr = new SimpleProcessRunner("test", testCreator.buildRunnableProcessBuilder()) {
+		testCreator.addLineToScript("exit(2)");
+		SimpleProcessRunner pr = new SimpleProcessRunner("test", ProcessRunnerType.SCRIPT_RUNNER, testCreator.buildRunnableProcessBuilder()) {
 			@Override
 			protected void afterStartProcessEvent() {
 
@@ -53,8 +53,26 @@ class ScriptCreatorTest {
 			protected void afterRestartProcessEvent() {
 
 			}
+
+			@Override
+			protected void afterFinishProcessEvent() {
+
+			}
 		};
-		pr.startProcess();
+		pr.startProcessWithoutRunningStartTest();
 		pr.waitForProcess();
+		assertEquals(2, pr.getLastExitCode());
+		assertEquals("hello world", new BufferedReader(new InputStreamReader(pr.getProcessInputStream())).readLine());
+		assertNull(new BufferedReader(new InputStreamReader(pr.getProcessErrorStream())).readLine());
+	}
+
+	@Test
+	void ScriptCreatorInnerRunTest_goodTest() throws InterruptedException, InterpreterOrScriptNotDefinedException, IOException {
+		testCreator.addLineToScript("print \"hello world\"");
+		testCreator.addLineToScript("exit(2)");
+		Process p = testCreator.runDirectly();
+		assertEquals(2, p.exitValue());
+		assertEquals("hello world", new BufferedReader(new InputStreamReader(p.getInputStream())).readLine());
+		assertNull(new BufferedReader(new InputStreamReader(p.getInputStream())).readLine());
 	}
 }

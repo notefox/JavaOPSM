@@ -26,9 +26,9 @@ public class JavaSocketCommunicationTemplate {
         ArrayList<String> commandList = new ArrayList<>();
         commandList.add("java");
         commandList.add("modules/SingleFile/SingleClassModuleExample.java");
-        commandList.add("file=file");
-        commandList.add("name=testProcess");
-        commandList.add("port=" + port);
+        commandList.add("file:file");
+        commandList.add("name:testProcess");
+        commandList.add("port:" + port);
         pro = new SocketCommunicationProcessRunner("java socket template", server, commandList);
         /*
          pro.startProcess();

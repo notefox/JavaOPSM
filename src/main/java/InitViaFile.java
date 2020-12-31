@@ -10,9 +10,8 @@ public class InitViaFile {
 
         String readString = readStringFromBufferedWriter(file);
         String usableLines = cleanUpReadString(readString);
-        HashMap<String, HashMap<String, String>> returner = readInMap(usableLines);
 
-        return returner;
+        return readInMap(usableLines);
     }
     private static HashMap<String, HashMap<String, String>> readInMap(String usableLines) {
         String[] split = usableLines.split("\n");
@@ -84,25 +83,29 @@ public class InitViaFile {
         file.createNewFile();
 
         FileWriter fw = new FileWriter(file);
-        fw.write("[DefaultVariables] \n");
+        fw.write("[initValues] \n");
         fw.write("modules_dir = modules/\n");
         fw.write("scripts_dir = scripts/\n");
         fw.write("\n");
         fw.write(";; [exampleModule]\n");
-        fw.write(";; name = fileName/projectDirName\n");
-        fw.write(";; type = single/project/script/other\n");
-        fw.write(";; communication = none/socket\n");
+        fw.write(";; name = processName (needed)\n");
+        fw.write(";; file = fileName (needed)\n");
+        fw.write(";; type = single/project/script (needed)\n");
+        fw.write(";; communication = none/socket (needed)\n");
+        fw.write("\n");
+        fw.write(";; port = any int (only needed if communication socket)\n");
+        fw.write("\n");
+        fw.write(";; interpreter = system interpreter (python/bash/...)\n");
+        fw.write(";; compiler = system compiler (java/...)\n");
+        fw.write(";; (either needed)\n");
+        fw.write("\n");
+        fw.write(";; (optional)\n");
         fw.write(";; parameter = any\n");
+        fw.write(";; build = mvn install (only if type = project, then needed)\n");
+        fw.write(";; target_jar = target/file.jar (only if type = project, then needed)\n");
         fw.flush();
         fw.close();
 
-        HashMap<String, HashMap<String, String>> iniList = new HashMap<>();
-        String blockName = "defaultVariable";
-        HashMap<String, String> blockValues = new HashMap<>();
-        blockValues.put("modules_dir", "modules/");
-        blockValues.put("scripts_dir", "scripts/");
-        iniList.put(blockName, blockValues);
-
-        return iniList;
+        return init(file);
     }
 }

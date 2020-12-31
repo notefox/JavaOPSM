@@ -13,6 +13,11 @@ import java.util.concurrent.TimeUnit;
 public abstract class SimpleProcessRunner implements ProcessRunner {
 
     /**
+     * type of runner
+     */
+    private ProcessRunnerType runnerType = ProcessRunnerType.CUSTOM;
+
+    /**
      * process name
      */
     private final String name;
@@ -31,7 +36,8 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
      * simple Constructor with a command List
      * @param processCommand commandList
      */
-    public SimpleProcessRunner(@NotNull String name, List<String> processCommand) {
+    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, List<String> processCommand) {
+        this.runnerType = type;
         this.name = name;
         this.pb = new ProcessBuilder();
         pb.command(processCommand);
@@ -41,16 +47,18 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
      * constructor for direct ProcessBuilderInjection
      * @param pb ProcessBuilder
      */
-    public SimpleProcessRunner(@NotNull String name, ProcessBuilder pb) {
+    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, ProcessBuilder pb) {
         this.name = name;
         this.pb = pb;
+        this.runnerType = type;
     }
 
     /**
      * single command process constructor
      * @param processCommand command
      */
-    public SimpleProcessRunner(@NotNull String name, String processCommand) {
+    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, String processCommand) {
+        this.runnerType = type;
         this.name = name;
         this.pb = new ProcessBuilder();
         pb.command(processCommand);
@@ -60,7 +68,8 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
      * Strings of process commands, directly used for ProcessBuilder
      * @param processCommands commands and arguments
      */
-    public SimpleProcessRunner(@NotNull String name, String... processCommands) {
+    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, String... processCommands) {
+        this.runnerType = type;
         this.name = name;
         this.pb = new ProcessBuilder();
         this.pb.command(processCommands);
@@ -73,9 +82,9 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
      * (the Process will continue running till the end)
      *
      * @param p Process to reproduce
-     * @throws ProcessCouldNotBeReproduced is thrown, if the process wasn't usable or already died
+     * @throws ProcessCouldNotBeReproducedException is thrown, if the process wasn't usable or already died
      */
-    public SimpleProcessRunner(@NotNull String name, Process p) throws ProcessCouldNotBeReproduced {
+    public SimpleProcessRunner(@NotNull String name, Process p) throws ProcessCouldNotBeReproducedException {
         this.name = name;
         if (p.info().command().isPresent() || p.info().arguments().isPresent()) {
             String command = p.info().command().get();
@@ -89,7 +98,7 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
             this.pb = reproduced;
             this.process = p;
         } else {
-            throw new ProcessCouldNotBeReproduced("process wasn't reproducible because either the process wasn't " +
+            throw new ProcessCouldNotBeReproducedException("process wasn't reproducible because either the process wasn't " +
                     "usable or the process already died before it could have been reproduced");
         }
     }
@@ -100,6 +109,7 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
             throw new ProcessAlreadyStartedException("process already running, needs to be stopped first before start " +
                     "or if you want to restart, use the restart Method");
         }
+
         process = pb.start();
         if (!process.isAlive()) {
             throw new ProcessCouldNotStartException("process was either too fast done than the " +
@@ -108,6 +118,15 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
                     "try calling startProcessWithoutRunningStartTest()");
         }
         afterStartProcessEvent();
+        new Thread(() -> {
+            try {
+                process.waitFor();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            afterFinishProcessEvent();
+        }).start();
+
     }
 
     @Override
@@ -118,10 +137,18 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
         }
         process = pb.start();
         afterStartProcessEvent();
+        new Thread(() -> {
+            try {
+                process.waitFor();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            afterFinishProcessEvent();
+        }).start();
     }
 
     /**
-     * overridable event method called after start method was called
+     * overridable event method called after start method was called successfully
      */
     protected abstract void afterStartProcessEvent();
 
@@ -143,7 +170,7 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
     }
 
     /**
-     * overrideable event method called after stop method was called
+     * overrideable event method called after stop method was called successfully
      */
     protected abstract void afterStopProcessEvent();
 
@@ -163,7 +190,15 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
         afterRestartProcessEvent();
     }
 
+    /**
+     * overrideable event method called after restart method was called successfully
+     */
     protected abstract void afterRestartProcessEvent();
+
+    /**
+     * overrideable event method called after process finished without being stopped
+     */
+    protected abstract void afterFinishProcessEvent();
 
     @Override
     public boolean isProcessAlive() {
@@ -179,6 +214,25 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
             return;
         }
         process.waitFor();
+    }
+
+    @Override
+    public void waitForProcess(long time) throws ProcessIsNotAliveException, InterruptedException, ProcessCouldNotStopException {
+        if (!isProcessAlive()) {
+            return;
+        }
+        process.waitFor(time, TimeUnit.MILLISECONDS);
+        if (this.isProcessAlive())
+            this.stopProcess();
+    }
+
+    @Override
+    public int getLastExitCode() throws ProcessNotExitedYetException {
+        try {
+            return process.exitValue();
+        } catch (IllegalThreadStateException e) {
+            throw new ProcessNotExitedYetException(e);
+        }
     }
 
     @Override
@@ -230,5 +284,22 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
      */
     public String getName() {
         return name;
+    }
+
+    public ProcessBuilder getProcessBuilder() {
+        return new ProcessBuilder(pb.command());
+    }
+
+    public ProcessRunnerType getType() {
+        return runnerType;
+    }
+
+    @Override
+    public String toString() {
+        return "SimpleProcessRunner{" +
+                "name='" + name + '\'' +
+                ", pb=" + pb.command() +
+                ", process=" + process +
+                '}';
     }
 }

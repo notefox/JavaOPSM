@@ -1,16 +1,15 @@
-import ipcOverSockets.ProcessExceptions.InterpreterOrScriptNotDefinedException;
-import ipcOverSockets.ProcessExceptions.ProcessAlreadyStartedException;
-import ipcOverSockets.ProcessExceptions.ProcessCouldNotStartException;
+import ipcOverSockets.ProcessExceptions.*;
 import ipcOverSockets.ProcessManager;
-import ipcOverSockets.ProcessRunner.ProcessRunner;
-import ipcOverSockets.ProcessRunner.ScriptCreator;
-import ipcOverSockets.ProcessRunner.SimpleProcessRunner;
+import ipcOverSockets.ProcessRunner.*;
 import ipcOverSockets.ProcessRunnerTemplates.PythonScriptTemplate;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.ServerSocket;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class Main {
@@ -19,53 +18,29 @@ public class Main {
 
     private static final ProcessManager manager = new ProcessManager();
 
-    public static void main(String[] args) throws IOException, InterpreterOrScriptNotDefinedException, ProcessAlreadyStartedException, ProcessCouldNotStartException, InterruptedException {
-        //initIntoManager();
-        // create script file
-        File script = new File("scripts/python_test_script.py");
-        ScriptCreator sc = new ScriptCreator("bash", script) {
-            @Override
-            public void afterRun(Process process) {
-                BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                BufferedReader be = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-                try {
-                    while (br.ready()) {
-                        System.out.println(br.readLine());
-                    }
-                    while (be.ready()) {
-                        System.err.println(be.readLine());
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+    public static void main(String[] args) throws IOException, InterpreterOrScriptNotDefinedException, ProcessAlreadyStartedException, ProcessCouldNotStartException, InterruptedException, ProcessNotExitedYetException {
+        initIntoManager();
+        manager.getAllModules().forEach(x -> {
+            try {
+                System.out.println(x.toString());
+                x.waitForProcess(20000L);
+                BufferedReader br = new BufferedReader(new InputStreamReader(x.getProcessInputStream()));
+                BufferedReader be = new BufferedReader(new InputStreamReader(x.getProcessErrorStream()));
+
+                while (br.ready()) {
+                    System.out.println(x.getName() + " normal \t" + br.readLine());
                 }
-            }
-        };
-        sc.addLineToScript("print \"hello world\"");
-        sc.addLineToScript("exit(0)");
 
-        SimpleProcessRunner spr = new SimpleProcessRunner("test", sc.buildRunnableProcessBuilder()) {
-            @Override
-            protected void afterStartProcessEvent() {
-                //
+                while (be.ready()) {
+                    System.err.println(x.getName() + " error \t" + be.readLine());
+                }
+                System.out.println(" exit code : " + x.getLastExitCode());
+                System.out.println("\n\n\n");
+                Thread.sleep(100);
+            } catch (InterruptedException | IOException | ProcessNotExitedYetException | ProcessIsNotAliveException | ProcessCouldNotStopException e) {
+                e.printStackTrace();
             }
-
-            @Override
-            protected void afterStopProcessEvent() {
-                //
-            }
-
-            @Override
-            protected void afterRestartProcessEvent() {
-                //
-            }
-        };
-        spr.startProcess();
-        spr.waitForProcess();
-
-        // create necessary script
-        // sc.addLineToScript("cd " + pathToMVNProject + " || exit");
-        // sc.addLineToScript("mvn install\n");
-        // sc.addLineToScript("java -jar target/mavenExampleProject-0.1.jar");
+        });
     }
 
     private static void initIntoManager() throws IOException {
@@ -73,16 +48,17 @@ public class Main {
         //init.keySet().forEach(x -> System.out.println(x + " -> " + init.get(x)));
         readInDefaultDir(init);
         readInModuels(init);
-        for (SimpleProcessRunner pr :
-                manager.getAllModules()) {
-            System.out.println(pr.getName());
-        }
     }
     private static void readInModuels(HashMap<String, HashMap<String, String>> init) {
         init.keySet().forEach((x) -> {
               if (!x.equals("initValues")) {
                   SimpleProcessRunner spr = buildProcessRunner(init.get(x));
                   manager.addModule(spr.getName(), spr);
+                  try {
+                      spr.startProcessWithoutRunningStartTest();
+                  } catch (IOException | ProcessAlreadyStartedException e) {
+                      e.printStackTrace();
+                  }
               }
         });
     }
@@ -93,13 +69,20 @@ public class Main {
         String type = map.get("type");
         String interpreter = map.get("interpreter");
         String compiler = map.get("compiler");
-        String comunication = null;
+
+        String communication = null;
         if (map.containsKey("communication") && !map.get("communication").equals("none")) {
-            comunication = map.get("communication");
+            communication = map.get("communication");
         }
+
         String parameter = null;
         if (map.containsKey("parameter") && !map.get("parameter").equals("none")) {
             parameter = map.get("parameter");
+        }
+
+        String port = null;
+        if (map.containsKey("port") && !map.get("port").equals("none")) {
+            port = map.get("port");
         }
         String build = null;
         String targetJar = null;
@@ -110,19 +93,64 @@ public class Main {
 
         SimpleProcessRunner spr = null;
         // build the actual ProcessRunner
-        switch (type) {
-            case "project":
-                ScriptCreator buildScript = new ScriptCreator("bash", new File(scriptDir.getPath() + "/" + name + "_builder.sh")) {
-                    @Override
-                    public void afterRun(Process process) {
-                        // nothing
+
+            switch (type) {
+                case "project":
+                    ScriptCreator buildScript = new ScriptCreator("bash", new File(scriptDir.getPath() + "/" + name + "_builder.sh")) {
+                        @Override
+                        public void afterRun(Process process) {
+                            // nothing
+                        }
+                    };
+                    buildScript.addLineToScript("cd " + modulesDir + "/" + file + " || exit");
+                    buildScript.addLineToScript(build);
+                    if (parameter != null)
+                        buildScript.addLineToScript(compiler + " " + targetJar + " " + parameter);
+                    else
+                        buildScript.addLineToScript(compiler + " " + targetJar);
+                    try {
+                        spr = new SimpleProcessRunner(name, ProcessRunnerType.SCRIPT_RUNNER, buildScript.buildRunnableProcessBuilder()) {
+                            @Override
+                            protected void afterStartProcessEvent() {
+                                //
+                            }
+
+                            @Override
+                            protected void afterStopProcessEvent() {
+                                //
+                            }
+
+                            @Override
+                            protected void afterRestartProcessEvent() {
+                                //
+                            }
+
+                            @Override
+                            protected void afterFinishProcessEvent() {
+                                //
+                            }
+                        };
+                    } catch (IOException | InterpreterOrScriptNotDefinedException e) {
+                        e.printStackTrace();
                     }
-                };
-                buildScript.addLineToScript("cd " + modulesDir + file);
-                buildScript.addLineToScript(build);
-                buildScript.addLineToScript(compiler + " " + targetJar);
-                try {
-                    spr = new SimpleProcessRunner(name, buildScript.buildRunnableProcessBuilder()) {
+                    break;
+                case "single":
+                    ArrayList<String> commandList = new ArrayList<>();
+                    ProcessRunnerType pRType;
+                    if (interpreter != null) {
+                        commandList.add(interpreter);
+                        pRType = ProcessRunnerType.SCRIPT_RUNNER;
+                    } else if (compiler != null) {
+                        commandList.add(compiler);
+                        pRType = ProcessRunnerType.STANDARD_RUNNER;
+                    } else {
+                        throw new NullPointerException("neither compiler nor interpreter were set for " + name);
+                    }
+                    commandList.add(modulesDir + "/" + file);
+                    if (parameter != null) {
+                        Collections.addAll(commandList, parameter.split(" "));
+                    }
+                    spr = new SimpleProcessRunner(name, pRType, commandList) {
                         @Override
                         protected void afterStartProcessEvent() {
                             //
@@ -137,72 +165,66 @@ public class Main {
                         protected void afterRestartProcessEvent() {
                             //
                         }
+
+                        @Override
+                        protected void afterFinishProcessEvent() {
+                            //
+                        }
                     };
-                } catch (IOException | InterpreterOrScriptNotDefinedException e) {
-                    e.printStackTrace();
+                    break;
+                case "script":
+                    commandList = new ArrayList<>();
+                    commandList.add(interpreter);
+                    commandList.add(scriptDir + "/" + file);
+                    if (parameter != null) {
+                        Collections.addAll(commandList, parameter.split(" "));
+                    }
+                    spr = new SimpleProcessRunner(name, ProcessRunnerType.SCRIPT_RUNNER, commandList) {
+                        @Override
+                        protected void afterStartProcessEvent() {
+                            //
+                        }
+
+                        @Override
+                        protected void afterStopProcessEvent() {
+                            //
+                        }
+
+                        @Override
+                        protected void afterRestartProcessEvent() {
+                            //
+                        }
+
+                        @Override
+                        protected void afterFinishProcessEvent() {
+                            //
+                        }
+                    };
+                    break;
+                default:
+                    throw new TypeNotPresentException("given ini type " + type + " for module named " + name +
+                            "is not existent", new NullPointerException());
+            }
+
+            if (communication != null) {
+                switch (communication) {
+                    case "socket":
+                        ServerSocket svso = null;
+                        try {
+                            assert port != null;
+                            svso = new ServerSocket(Integer.parseInt(port));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        assert spr != null;
+                        assert svso != null;
+                        return new SocketCommunicationProcessRunner(name, spr.getProcessBuilder(), svso);
+                    case "none":
+                        System.err.println("unnecessary communications token was detected and masterfully ignored");
+                    default:
+                        System.err.println("communication type : " + communication + " not recognizable for module : " + name);
                 }
-            break;
-            case "single":
-                if (interpreter != null) {
-                    spr = new SimpleProcessRunner(name, interpreter, modulesDir + file, parameter) {
-                        @Override
-                        protected void afterStartProcessEvent() {
-                            //
-                        }
-
-                        @Override
-                        protected void afterStopProcessEvent() {
-                            //
-                        }
-
-                        @Override
-                        protected void afterRestartProcessEvent() {
-                            //
-                        }
-                    };
-                } else if (compiler != null) {
-                    spr = new SimpleProcessRunner(name, compiler, modulesDir + file, parameter) {
-                        @Override
-                        protected void afterStartProcessEvent() {
-                            //
-                        }
-
-                        @Override
-                        protected void afterStopProcessEvent() {
-                            //
-                        }
-
-                        @Override
-                        protected void afterRestartProcessEvent() {
-                            //
-                        }
-                    };
-                } else {
-                    throw new NullPointerException("neither compiler nor interpreter were set for " + name);
-                }
-            break;
-            case "script":
-                spr = new SimpleProcessRunner(name, interpreter, file) {
-                    @Override
-                    protected void afterStartProcessEvent() {
-                        //
-                    }
-
-                    @Override
-                    protected void afterStopProcessEvent() {
-                        //
-                    }
-
-                    @Override
-                    protected void afterRestartProcessEvent() {
-                        //
-                    }
-                };
-            break;
-            default:
-                throw new TypeNotPresentException("given ini type " + type + " for module named " + name +
-                        "is not existent", new NullPointerException());
-        }
+            }
         return spr;
     }
     private static void readInDefaultDir(HashMap<String, HashMap<String, String>> init) {

@@ -3,6 +3,7 @@ package ipcOverSockets.ProcessRunnerTemplates;
 import ipcOverSockets.ProcessExceptions.InterpreterOrScriptNotDefinedException;
 import ipcOverSockets.ProcessExceptions.ProcessAlreadyStartedException;
 import ipcOverSockets.ProcessExceptions.ProcessCouldNotStartException;
+import ipcOverSockets.ProcessRunner.ProcessRunnerType;
 import ipcOverSockets.ProcessRunner.ScriptCreator;
 import ipcOverSockets.ProcessRunner.SimpleProcessRunner;
 
@@ -43,7 +44,7 @@ public class JavaMavenRunnerTemplate {
         SimpleProcessRunner spc = null;
         try {
             ProcessBuilder pb = sc.buildRunnableProcessBuilder();
-            spc = new SimpleProcessRunner("maven template" ,pb) {
+            spc = new SimpleProcessRunner("maven template", ProcessRunnerType.SCRIPT_RUNNER ,pb) {
                 @Override
                 protected void afterStartProcessEvent() {
                     //
@@ -56,6 +57,11 @@ public class JavaMavenRunnerTemplate {
 
                 @Override
                 protected void afterRestartProcessEvent() {
+                    //
+                }
+
+                @Override
+                protected void afterFinishProcessEvent() {
                     //
                 }
             };

@@ -16,6 +16,10 @@ public class ProcessManager {
     }
 
 
+    public SimpleProcessRunner getModuleOfName(String name) {
+        return processes.get(name);
+    }
+
     public List<SimpleProcessRunner> getAllModules() {
         ArrayList<SimpleProcessRunner> returner = new ArrayList<>();
         processes.keySet().stream().map(processes::get).forEach(returner::add);
