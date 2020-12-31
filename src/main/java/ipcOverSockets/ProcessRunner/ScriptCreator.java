@@ -1,6 +1,7 @@
 package ipcOverSockets.ProcessRunner;
 
 import ipcOverSockets.ProcessExceptions.InterpreterOrScriptNotDefinedException;
+import ipcOverSockets.ProcessExceptions.ExecutableFileInRootDirectoryException;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -24,9 +25,13 @@ public abstract class ScriptCreator {
      * @param interpreter script interpreter path
      * @param script script file
      */
-    public ScriptCreator(String interpreter, File script) {
+    public ScriptCreator(String interpreter, File script) throws ExecutableFileInRootDirectoryException {
         this.interpreter = interpreter;
-        this.scriptPath = new File(script.getParent());
+        try {
+            this.scriptPath = new File(script.getParent());
+        } catch (NullPointerException e) {
+            throw new ExecutableFileInRootDirectoryException("script is not allowed to be in the root directory", e);
+        }
         this.script = script;
     }
 

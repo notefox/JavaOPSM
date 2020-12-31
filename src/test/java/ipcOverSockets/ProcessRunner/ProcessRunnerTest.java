@@ -7,8 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.lang.annotation.Documented;
+import java.lang.reflect.Executable;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.chrono.ThaiBuddhistEra;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -339,5 +342,71 @@ class ProcessRunnerTest {
             }
         } );
         verify(processMock, Mockito.times(2)).info();
+    }
+
+    @Test
+    void startFinishEventMethodTesting() throws ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException {
+        Thread startEvent = mock(Thread.class);
+        Thread finishEvent = mock(Thread.class);
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, "sleep", "0") {
+            @Override
+            protected void afterStartProcessEvent() {
+                startEvent.start();
+            }
+
+            @Override
+            protected void afterStopProcessEvent() {
+                //
+            }
+
+            @Override
+            protected void afterRestartProcessEvent() {
+                //
+            }
+
+            @Override
+            protected void afterFinishProcessEvent() {
+                finishEvent.start();
+            }
+        };
+        pr.startProcessWithoutRunningStartTest();
+        verify(startEvent, times(1)).start();
+        verify(finishEvent, times(1)).start();
+    }
+
+    @Test
+    void restartStopEventMethodTesting() throws ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException, ProcessIsNotAliveException, ProcessCouldNotStopException, InterruptedException {
+        Thread start = mock(Thread.class);
+        Thread stop = mock(Thread.class);
+        Thread restart = mock(Thread.class);
+        Thread finish = mock(Thread.class);
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, "sleep", "3") {
+            @Override
+            protected void afterStartProcessEvent() {
+                start.start();
+            }
+
+            @Override
+            protected void afterStopProcessEvent() {
+                stop.start();
+            }
+
+            @Override
+            protected void afterRestartProcessEvent() {
+                restart.start();
+            }
+
+            @Override
+            protected void afterFinishProcessEvent() {
+                finish.start();
+            }
+        };
+        pr.startProcess();
+        pr.restartProcess();
+        pr.waitForProcess();
+        verify(start, times(2)).start();
+        verify(stop, times(1)).start();
+        verify(restart, times(1)).start();
+        verify(finish, times(2)).start();
     }
 }

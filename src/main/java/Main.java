@@ -52,7 +52,12 @@ public class Main {
     private static void readInModuels(HashMap<String, HashMap<String, String>> init) {
         init.keySet().forEach((x) -> {
               if (!x.equals("initValues")) {
-                  SimpleProcessRunner spr = buildProcessRunner(init.get(x));
+                  SimpleProcessRunner spr = null;
+                  try {
+                      spr = buildProcessRunner(init.get(x));
+                  } catch (ExecutableFileInRootDirectoryException e) {
+                      e.printStackTrace();
+                  }
                   manager.addModule(spr.getName(), spr);
                   try {
                       spr.startProcessWithoutRunningStartTest();
@@ -62,7 +67,7 @@ public class Main {
               }
         });
     }
-    private static SimpleProcessRunner buildProcessRunner(HashMap<String, String> map) {
+    private static SimpleProcessRunner buildProcessRunner(HashMap<String, String> map) throws ExecutableFileInRootDirectoryException {
         map = trimKeys(map);
         String name = map.get("name");
         String file = map.get("file");

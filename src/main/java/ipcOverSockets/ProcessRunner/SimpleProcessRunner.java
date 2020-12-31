@@ -36,7 +36,7 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
      * simple Constructor with a command List
      * @param processCommand commandList
      */
-    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, List<String> processCommand) {
+    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, @NotNull List<String> processCommand) {
         this.runnerType = type;
         this.name = name;
         this.pb = new ProcessBuilder();
@@ -47,7 +47,7 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
      * constructor for direct ProcessBuilderInjection
      * @param pb ProcessBuilder
      */
-    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, ProcessBuilder pb) {
+    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, @NotNull ProcessBuilder pb) {
         this.name = name;
         this.pb = pb;
         this.runnerType = type;
@@ -57,7 +57,7 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
      * single command process constructor
      * @param processCommand command
      */
-    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, String processCommand) {
+    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, @NotNull String processCommand) {
         this.runnerType = type;
         this.name = name;
         this.pb = new ProcessBuilder();
@@ -68,11 +68,15 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
      * Strings of process commands, directly used for ProcessBuilder
      * @param processCommands commands and arguments
      */
-    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, String... processCommands) {
+    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, @NotNull String... processCommands) {
         this.runnerType = type;
         this.name = name;
         this.pb = new ProcessBuilder();
-        this.pb.command(processCommands);
+        if (processCommands.length == 0) {
+            throw new NullPointerException("no process command were given");
+        } else {
+            this.pb.command(processCommands);
+        }
     }
 
     /**

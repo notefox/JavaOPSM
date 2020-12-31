@@ -17,7 +17,7 @@ class ScriptCreatorTest {
 	File testFile;
 
 	@BeforeEach
-	void setUp() {
+	void setUp() throws ExecutableFileInRootDirectoryException {
 		testInterpreter = "python";
 		testFile = new File("test/testFile.test");
 		testCreator = new ScriptCreator(testInterpreter, testFile) {

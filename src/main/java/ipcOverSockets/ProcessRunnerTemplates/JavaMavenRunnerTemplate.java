@@ -1,5 +1,6 @@
 package ipcOverSockets.ProcessRunnerTemplates;
 
+import ipcOverSockets.ProcessExceptions.ExecutableFileInRootDirectoryException;
 import ipcOverSockets.ProcessExceptions.InterpreterOrScriptNotDefinedException;
 import ipcOverSockets.ProcessExceptions.ProcessAlreadyStartedException;
 import ipcOverSockets.ProcessExceptions.ProcessCouldNotStartException;
@@ -13,7 +14,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class JavaMavenRunnerTemplate {
-    public static SimpleProcessRunner buildTemplate() {
+    public static SimpleProcessRunner buildTemplate() throws ExecutableFileInRootDirectoryException {
         String pathToMVNProject = "modules/Projects/mavenExampleProject";
 
         // create script file
