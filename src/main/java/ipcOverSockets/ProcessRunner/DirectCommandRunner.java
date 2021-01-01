@@ -3,15 +3,12 @@ package ipcOverSockets.ProcessRunner;
 import ipcOverSockets.ProcessExceptions.ProcessAlreadyStartedException;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.*;
 
 public class DirectCommandRunner extends SimpleProcessRunner {
 
-    public DirectCommandRunner(@NotNull String processCommand, PrintStream output, PrintStream error) throws IOException, ProcessAlreadyStartedException, InterruptedException {
-        super(processCommand, ProcessRunnerType.DIRECT_COMMAND_RUNNER, processCommand);
+    public DirectCommandRunner(@NotNull String processCommand, PrintStream output, PrintStream error, File logDir) throws IOException, ProcessAlreadyStartedException, InterruptedException {
+        super(processCommand, ProcessRunnerType.DIRECT_COMMAND_RUNNER, processCommand, logDir);
         this.startProcessWithoutRunningStartTest();
         this.waitForProcess();
         BufferedReader br = new BufferedReader(new InputStreamReader(this.getProcessInputStream()));

@@ -14,12 +14,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class JavaMavenRunnerTemplate {
-    public static SimpleProcessRunner buildTemplate() throws ExecutableFileInRootDirectoryException {
+    public static SimpleProcessRunner buildTemplate() throws ExecutableFileInRootDirectoryException, IOException {
         String pathToMVNProject = "modules/Projects/mavenExampleProject";
 
         // create script file
         File script = new File("scripts/mvn_compile_script.sh");
-        ScriptCreator sc = new ScriptCreator("bash", script) {
+        ScriptCreator sc = new ScriptCreator("bash", script, null) {
             @Override
             public void afterRun(Process process) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -45,7 +45,7 @@ public class JavaMavenRunnerTemplate {
         SimpleProcessRunner spc = null;
         try {
             ProcessBuilder pb = sc.buildRunnableProcessBuilder();
-            spc = new SimpleProcessRunner("maven template", ProcessRunnerType.SCRIPT_RUNNER ,pb) {
+            spc = new SimpleProcessRunner("maven template", ProcessRunnerType.PROJECT_RUNNER ,pb, null) {
                 @Override
                 protected void afterStartProcessEvent() {
                     //

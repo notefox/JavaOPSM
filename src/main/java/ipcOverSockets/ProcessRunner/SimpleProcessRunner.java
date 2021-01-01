@@ -1,8 +1,10 @@
 package ipcOverSockets.ProcessRunner;
 
+import Logger.LoggableObject;
 import ipcOverSockets.ProcessExceptions.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -10,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public abstract class SimpleProcessRunner implements ProcessRunner {
+public abstract class SimpleProcessRunner extends LoggableObject implements ProcessRunner {
 
     /**
      * type of runner
@@ -33,10 +35,15 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
     private Process process;
 
     /**
-     * simple Constructor with a command List
-     * @param processCommand commandList
+     * constructor for a list of commands
+     * @param name name of process
+     * @param type process type
+     * @param processCommand List of Process Commands
+     * @param logDir loggingDir
+     * @throws IOException is thrown, if the logger has problems using the given path
      */
-    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, @NotNull List<String> processCommand) {
+    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, @NotNull List<String> processCommand, File logDir) throws IOException {
+        super(name, "SimpleProcessRunner_", new File(logDir.getPath() + "/" + name), 512, true);
         this.runnerType = type;
         this.name = name;
         this.pb = new ProcessBuilder();
@@ -44,20 +51,30 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
     }
 
     /**
-     * constructor for direct ProcessBuilderInjection
+     * constructor for ProcessBuilder
+     * @param name name of process
+     * @param type process type
      * @param pb ProcessBuilder
+     * @param logDir loggingDir
+     * @throws IOException is thrown, if the logger has problems using the given path
      */
-    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, @NotNull ProcessBuilder pb) {
+    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, @NotNull ProcessBuilder pb, File logDir) throws IOException {
+        super(name, "SimpleProcessRunner_", new File(logDir.getPath() + "/" + name), 512, true);
         this.name = name;
         this.pb = pb;
         this.runnerType = type;
     }
 
     /**
-     * single command process constructor
-     * @param processCommand command
+     * constructor for a single command Process
+     * @param name name of process
+     * @param type process type
+     * @param processCommand executable command
+     * @param logDir loggingDir
+     * @throws IOException is thrown, if the logger has problems using the given path
      */
-    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, @NotNull String processCommand) {
+    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, @NotNull String processCommand, File logDir) throws IOException {
+        super(name, "SimpleProcessRunner_", new File(logDir.getPath() + "/" + name), 512, true);
         this.runnerType = type;
         this.name = name;
         this.pb = new ProcessBuilder();
@@ -65,10 +82,15 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
     }
 
     /**
-     * Strings of process commands, directly used for ProcessBuilder
-     * @param processCommands commands and arguments
+     * constructor for command list
+     * @param name name of process
+     * @param type process type
+     * @param logDir loggingDir
+     * @param processCommands executable commands
+     * @throws IOException is thrown, if the logger has problems using the given path
      */
-    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, @NotNull String... processCommands) {
+    public SimpleProcessRunner(@NotNull String name, ProcessRunnerType type, File logDir, @NotNull String... processCommands) throws IOException {
+        super(name, "SimpleProcessRunner_", new File(logDir.getPath() + "/" + name), 512, true);
         this.runnerType = type;
         this.name = name;
         this.pb = new ProcessBuilder();
@@ -85,10 +107,14 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
      *
      * (the Process will continue running till the end)
      *
+     * @param name process name
      * @param p Process to reproduce
+     * @param logDir loggingDir
      * @throws ProcessCouldNotBeReproducedException is thrown, if the process wasn't usable or already died
+     * @throws IOException is thrown, if the logger has problems using the given path
      */
-    public SimpleProcessRunner(@NotNull String name, Process p) throws ProcessCouldNotBeReproducedException {
+    public SimpleProcessRunner(@NotNull String name, Process p, File logDir) throws ProcessCouldNotBeReproducedException, IOException {
+        super(name, "SimpleProcessRunner_", new File(logDir.getPath() + "/" + name), 512, true);
         this.name = name;
         if (p.info().command().isPresent() || p.info().arguments().isPresent()) {
             String command = p.info().command().get();
@@ -121,7 +147,6 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
                     "if you are 100% sure that the process should have started, " +
                     "try calling startProcessWithoutRunningStartTest()");
         }
-        afterStartProcessEvent();
         new Thread(() -> {
             try {
                 process.waitFor();
@@ -130,7 +155,7 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
             }
             afterFinishProcessEvent();
         }).start();
-
+        afterStartProcessEvent();
     }
 
     @Override
@@ -140,7 +165,6 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
                     "or if you want to restart, use the restart Method");
         }
         process = pb.start();
-        afterStartProcessEvent();
         new Thread(() -> {
             try {
                 process.waitFor();
@@ -149,6 +173,7 @@ public abstract class SimpleProcessRunner implements ProcessRunner {
             }
             afterFinishProcessEvent();
         }).start();
+        afterStartProcessEvent();
     }
 
     /**

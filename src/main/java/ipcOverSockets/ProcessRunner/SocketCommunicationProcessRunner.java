@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.ServerSocket;
@@ -23,27 +24,41 @@ public class SocketCommunicationProcessRunner extends SimpleProcessRunner {
     private Socket com;
 
     /**
-     * Constructor for StandardProcess
-     * @param command list of string which should start the process
-     * @param seso ServerSocket for communication
+     * constructor for command list
+     * @param name process name
+     * @param seso server socket base for communication
+     * @param logDir loggerDir
+     * @param command command list
+     * @throws IOException if thrown, if the logger has problems with the given path
      */
-    public SocketCommunicationProcessRunner(@NotNull String name, @NotNull ServerSocket seso, @NotNull List<String> command) {
-        super(name, ProcessRunnerType.SOCKET_COMMUNICATION_RUNNER, command);
+    public SocketCommunicationProcessRunner(@NotNull String name, @NotNull ServerSocket seso, File logDir, @NotNull List<String> command) throws IOException {
+        super(name, ProcessRunnerType.SOCKET_COMMUNICATION_RUNNER, command, logDir);
         this.seso = seso;
     }
 
     /**
-     * constructor for a single line command for a process with a server socket
-     * @param processCommand command to execute
-     * @param seso ServerSocket for communication
+     * constructor for single command
+     * @param name process name
+     * @param processCommand executable command
+     * @param logDir loggerDir
+     * @param seso server socket base for communication
+     * @throws IOException if thrown, if the logger has problems with the given path
      */
-    public SocketCommunicationProcessRunner(@NotNull String name, @NotNull String processCommand, @NotNull ServerSocket seso) {
-        super(name, ProcessRunnerType.SOCKET_COMMUNICATION_RUNNER, processCommand);
+    public SocketCommunicationProcessRunner(@NotNull String name, @NotNull String processCommand, File logDir, @NotNull ServerSocket seso) throws IOException {
+        super(name, ProcessRunnerType.SOCKET_COMMUNICATION_RUNNER, logDir, processCommand);
         this.seso = seso;
     }
 
-    public SocketCommunicationProcessRunner(@NotNull String name, @NotNull ProcessBuilder pb, @NotNull ServerSocket seso) {
-        super(name, ProcessRunnerType.SOCKET_COMMUNICATION_RUNNER, pb);
+    /**
+     * constructor for ProcessBuilder
+     * @param name name
+     * @param pb ProcessBuilder
+     * @param logDir loggerDir
+     * @param seso ServerSocket for Communication basis
+     * @throws IOException if thrown, if the logger has problems with the given path
+     */
+    public SocketCommunicationProcessRunner(@NotNull String name, @NotNull ProcessBuilder pb, File logDir, @NotNull ServerSocket seso) throws IOException {
+        super(name, ProcessRunnerType.SOCKET_COMMUNICATION_RUNNER, pb, logDir);
         this.seso = seso;
     }
 

@@ -1,9 +1,5 @@
 package ipcOverSockets.ProcessRunnerTemplates;
 
-import ipcOverSockets.ProcessExceptions.ProcessAlreadyStartedException;
-import ipcOverSockets.ProcessExceptions.ProcessCouldNotStartException;
-import ipcOverSockets.ProcessExceptions.ProcessIsNotAliveException;
-import ipcOverSockets.ProcessRunner.SimpleProcessRunner;
 import ipcOverSockets.ProcessRunner.SocketCommunicationProcessRunner;
 
 import java.io.IOException;
@@ -29,7 +25,12 @@ public class JavaSocketCommunicationTemplate {
         commandList.add("file:file");
         commandList.add("name:testProcess");
         commandList.add("port:" + port);
-        pro = new SocketCommunicationProcessRunner("java socket template", server, commandList);
+        assert server != null;
+        try {
+            pro = new SocketCommunicationProcessRunner("java socket template", server,null,  commandList);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         /*
          pro.startProcess();
          pro.getDos().writeUTF("hello");

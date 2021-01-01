@@ -1,7 +1,10 @@
 package ipcOverSockets.ProcessRunner;
 
+import Logger.LogType;
+import Logger.LoggableObject;
 import ipcOverSockets.ProcessExceptions.InterpreterOrScriptNotDefinedException;
 import ipcOverSockets.ProcessExceptions.ExecutableFileInRootDirectoryException;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -13,7 +16,7 @@ import java.util.Objects;
 /**
  * script builder class
  */
-public abstract class ScriptCreator {
+public abstract class ScriptCreator extends LoggableObject {
 
     private final String interpreter;
     private final File scriptPath;
@@ -25,7 +28,9 @@ public abstract class ScriptCreator {
      * @param interpreter script interpreter path
      * @param script script file
      */
-    public ScriptCreator(String interpreter, File script) throws ExecutableFileInRootDirectoryException {
+    public ScriptCreator(String interpreter, File script, File logDir) throws ExecutableFileInRootDirectoryException, IOException {
+        super(script.getName(), "ScriptCreator_", new File(logDir.getPath() + "/" + script.getName()),
+                512, true);
         this.interpreter = interpreter;
         try {
             this.scriptPath = new File(script.getParent());
@@ -40,6 +45,7 @@ public abstract class ScriptCreator {
      * @param line adds script line
      */
     public void addLineToScript(String line) {
+        log(LogType.INFO, "added line : " + line);
         scriptLines.add(line);
     }
 
@@ -60,11 +66,14 @@ public abstract class ScriptCreator {
      * (since both interpreter variable and script variable are final in here, this ScriptGenerator isn't really usable)
      */
     public ProcessBuilder buildRunnableProcessBuilder() throws IOException, InterpreterOrScriptNotDefinedException {
+        log(LogType.INFO, "building runnable process builder");
         // null-save String.equals()
         if((interpreter == null || scriptPath == null) || (Objects.equals(interpreter, "") || Objects.equals(scriptPath.getPath(), ""))) {
+            log(LogType.ERROR, "interpreter or scriptPath wasn't defined | interpreter : " + interpreter + " | Path : " + script.getPath());
             throw new InterpreterOrScriptNotDefinedException();
         }
         buildScript();
+        log(LogType.INFO, "script building was successful");
         ProcessBuilder pb = new ProcessBuilder();
         pb.command(interpreter, script.getPath());
         return pb;
@@ -80,11 +89,14 @@ public abstract class ScriptCreator {
      * @return ran Process
      */
     public Process runDirectly() throws IOException, InterpreterOrScriptNotDefinedException, InterruptedException {
+        log(LogType.INFO, "running script directly");
         // null-save String.equals()
         if((interpreter == null || scriptPath == null) || (Objects.equals(interpreter, "") || Objects.equals(scriptPath.getPath(), ""))) {
+            log(LogType.ERROR, "interpreter or scriptPath wasn't defined | interpreter : " + interpreter + " | Path : " + script.getPath());
             throw new InterpreterOrScriptNotDefinedException();
         }
         buildScript();
+        log(LogType.INFO, "script building was successful");
         Process process = buildRunnableProcessBuilder().start();
         process.waitFor();
         afterRun(process);
@@ -100,11 +112,14 @@ public abstract class ScriptCreator {
      * @return now running Process
      */
     public Process startDirectly() throws IOException, InterpreterOrScriptNotDefinedException {
+        log(LogType.INFO, "starting script directly");
         // null-save String.equals()
         if((interpreter == null || scriptPath == null) || (Objects.equals(interpreter, "") || Objects.equals(scriptPath.getPath(), ""))) {
+            log(LogType.ERROR, "interpreter or scriptPath wasn't defined | interpreter : " + interpreter + " | Path : " + script.getPath());
             throw new InterpreterOrScriptNotDefinedException();
         }
         buildScript();
+        log(LogType.INFO, "building script was successful");
         return buildRunnableProcessBuilder().start();
     }
 

@@ -1,9 +1,34 @@
+package ipcOverSockets;
+
 import java.io.*;
 import java.nio.file.NoSuchFileException;
 import java.util.Arrays;
 import java.util.HashMap;
 
 public class InitViaFile {
+    /**
+     * reads in given init file and gives back HashMap of Values
+     *
+     * if the ini file doesn't exists, then a example ini will be created at the given path / file
+     *
+     * @param file file
+     * @return HashMap<blockName , HashMap<Key, Value>>
+     *
+     *     as example how a entry looks like in the ini file and how it will be saved in the returned Map :
+     *
+     *      [blockName_A]
+     *      Key1a = some value
+     *      Key2a = some other value
+     *
+     *      [blockName_B]
+     *      Key1b = another
+     *      Key2b = and more
+     *
+     *      [blockName_A -> [Key1a -> "some value", Key2a -> "some other value"],
+     *       blockName_B -> [Key1b -> "another", Key2b -> "and more"]]
+     *
+     * @throws IOException is thrown, if the reading process failed
+     */
     public static HashMap<String, HashMap<String, String>> init(File file) throws IOException {
         if (checkIniExistence(file))
             return createDefaultInitFile(file);
@@ -78,6 +103,10 @@ public class InitViaFile {
 
         return usableLines;
     }
+
+    /**
+     * creates ini file and returns returnable hashmap of default values
+     */
     private static HashMap<String, HashMap<String, String>> createDefaultInitFile(File file) throws IOException {
         //noinspection ResultOfMethodCallIgnored
         file.createNewFile();
@@ -86,6 +115,7 @@ public class InitViaFile {
         fw.write("[initValues] \n");
         fw.write("modules_dir = modules/\n");
         fw.write("scripts_dir = scripts/\n");
+        fw.write("logger_dir = logs/\n");
         fw.write("\n");
         fw.write(";; [exampleModule]\n");
         fw.write(";; name = processName (needed)\n");

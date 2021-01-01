@@ -6,12 +6,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Documented;
 import java.lang.reflect.Executable;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.chrono.ThaiBuddhistEra;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,9 +22,13 @@ import static org.mockito.Mockito.*;
 class ProcessRunnerTest {
 
     ProcessRunner pr;
+    File mockedLoggerDir = mock(File.class);
 
     @BeforeEach
     void setUp() {
+        when(mockedLoggerDir.canWrite()).thenReturn(true);
+        when(mockedLoggerDir.delete()).thenReturn(true);
+        when(mockedLoggerDir.exists()).thenReturn(true);
     }
 
     @AfterEach
@@ -33,7 +39,7 @@ class ProcessRunnerTest {
     void startStopProcess_goodTest() throws
             ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException,
             ProcessIsNotAliveException, ProcessCouldNotStopException, InterruptedException {
-        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, "sleep", "2") {
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, mockedLoggerDir,"sleep", "2") {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -63,7 +69,7 @@ class ProcessRunnerTest {
     @Test
     void startWaitProcess_goodTest() throws ProcessCouldNotStartException, ProcessAlreadyStartedException,
             IOException, InterruptedException, ProcessIsNotAliveException {
-        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, "sleep", "2") {
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, mockedLoggerDir, "sleep", "2") {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -92,7 +98,7 @@ class ProcessRunnerTest {
 
     @Test
     void reuseProcess_goodTest() throws ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException, InterruptedException, ProcessIsNotAliveException {
-        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, "sleep", "2") {
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, mockedLoggerDir, "sleep", "2") {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -128,7 +134,7 @@ class ProcessRunnerTest {
 
     @Test
     void restartProcess_goodTest() throws ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException, ProcessCouldNotStopException, ProcessIsNotAliveException, InterruptedException {
-        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM,  "sleep", "2") {
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, mockedLoggerDir, "sleep", "2") {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -158,8 +164,8 @@ class ProcessRunnerTest {
     }
 
     @Test
-    void giveBadProcessCommand_badTest() throws ProcessCouldNotStartException, ProcessAlreadyStartedException {
-        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, "nothing to execute here") {
+    void giveBadProcessCommand_badTest() throws IOException {
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, mockedLoggerDir, "nothing to execute here") {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -191,7 +197,7 @@ class ProcessRunnerTest {
         when(builderMock.start()).thenReturn(processMock);
         when(processMock.isAlive()).thenReturn(true);
 
-        pr = new SimpleProcessRunner("test",ProcessRunnerType.CUSTOM, builderMock) {
+        pr = new SimpleProcessRunner("test",ProcessRunnerType.CUSTOM, builderMock, mockedLoggerDir) {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -259,7 +265,7 @@ class ProcessRunnerTest {
                 return Optional.empty();
             }
         });
-        pr = new SimpleProcessRunner("test", processMock) {
+        pr = new SimpleProcessRunner("test", processMock, mockedLoggerDir) {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -320,7 +326,7 @@ class ProcessRunnerTest {
                 return Optional.empty();
             }
         });
-        assertThrows(ProcessCouldNotBeReproducedException.class, () -> pr = new SimpleProcessRunner("test", processMock) {
+        assertThrows(ProcessCouldNotBeReproducedException.class, () -> pr = new SimpleProcessRunner("test", processMock, mockedLoggerDir) {
             @Override
             protected void afterStartProcessEvent() {
                 //
@@ -345,10 +351,10 @@ class ProcessRunnerTest {
     }
 
     @Test
-    void startFinishEventMethodTesting() throws ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException {
+    void startFinishEventMethodTesting_goodTest() throws ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException, InterruptedException {
         Thread startEvent = mock(Thread.class);
         Thread finishEvent = mock(Thread.class);
-        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, "sleep", "0") {
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, mockedLoggerDir, "sleep", "0") {
             @Override
             protected void afterStartProcessEvent() {
                 startEvent.start();
@@ -369,18 +375,19 @@ class ProcessRunnerTest {
                 finishEvent.start();
             }
         };
+        Thread.sleep(1);
         pr.startProcessWithoutRunningStartTest();
         verify(startEvent, times(1)).start();
         verify(finishEvent, times(1)).start();
     }
 
     @Test
-    void restartStopEventMethodTesting() throws ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException, ProcessIsNotAliveException, ProcessCouldNotStopException, InterruptedException {
+    void restartStopEventMethodTesting_goodTest() throws ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException, ProcessIsNotAliveException, ProcessCouldNotStopException, InterruptedException {
         Thread start = mock(Thread.class);
         Thread stop = mock(Thread.class);
         Thread restart = mock(Thread.class);
         Thread finish = mock(Thread.class);
-        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, "sleep", "3") {
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, mockedLoggerDir, "sleep", "3") {
             @Override
             protected void afterStartProcessEvent() {
                 start.start();
@@ -408,5 +415,212 @@ class ProcessRunnerTest {
         verify(stop, times(1)).start();
         verify(restart, times(1)).start();
         verify(finish, times(2)).start();
+    }
+
+    @Test
+    void giveNoProcessCommandStrings_badTest() {
+        assertThrows(NullPointerException.class, () -> new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, mockedLoggerDir) {
+            @Override
+            protected void afterStartProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterStopProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterRestartProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterFinishProcessEvent() {
+
+            }
+        });
+    }
+
+    @Test
+    void startAlreadyStartedProcess_badTest() throws ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException {
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, mockedLoggerDir, "sleep", "5") {
+            @Override
+            protected void afterStartProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterStopProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterRestartProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterFinishProcessEvent() {
+
+            }
+        };
+        pr.startProcess();
+        assertThrows(ProcessAlreadyStartedException.class, () -> pr.startProcess());
+    }
+
+    @Test
+    void processRefusedToStartTest_badTest() throws IOException {
+        ProcessBuilder mockedPB = mock(ProcessBuilder.class);
+        Process mockedP = mock(Process.class);
+        when(mockedPB.start()).thenReturn(mockedP);
+        when(mockedP.isAlive()).thenReturn(false);
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, mockedPB, mockedLoggerDir) {
+            @Override
+            protected void afterStartProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterStopProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterRestartProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterFinishProcessEvent() {
+
+            }
+        };
+        assertThrows(ProcessCouldNotStartException.class, () -> pr.startProcess());
+    }
+
+    @Test
+    void restartNotRunningProcessTest_badTest() throws IOException, ProcessAlreadyStartedException, ProcessCouldNotStartException {
+        ProcessBuilder mockedPB = mock(ProcessBuilder.class);
+        Process mockedP = mock(Process.class);
+        when(mockedPB.start()).thenReturn(mockedP);
+        when(mockedP.isAlive()).thenReturn(false);
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, mockedPB, mockedLoggerDir) {
+            @Override
+            protected void afterStartProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterStopProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterRestartProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterFinishProcessEvent() {
+
+            }
+        };
+        pr.startProcessWithoutRunningStartTest();
+        assertThrows(ProcessIsNotAliveException.class, () -> pr.restartProcess());
+    }
+
+    @Test
+    void processCouldNotBeStoppedTest_badTest() throws IOException, ProcessIsNotAliveException, ProcessCouldNotStopException, InterruptedException, ProcessAlreadyStartedException, ProcessCouldNotStartException {
+        ProcessBuilder mockedPB = mock(ProcessBuilder.class);
+        Process mockedP = mock(Process.class);
+        when(mockedPB.start()).thenReturn(mockedP);
+        when(mockedP.isAlive()).thenReturn(true);
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, mockedPB, mockedLoggerDir) {
+            @Override
+            protected void afterStartProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterStopProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterRestartProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterFinishProcessEvent() {
+
+            }
+        };
+        pr.startProcess();
+        assertThrows(ProcessCouldNotStopException.class, () -> pr.stopProcess());
+    }
+
+    @Test
+    void waitForNotAliveProcessTest_goodTest() throws IOException, InterruptedException, ProcessIsNotAliveException, ProcessAlreadyStartedException, ProcessCouldNotStartException, ProcessCouldNotStopException {
+        ProcessBuilder mockedPB = mock(ProcessBuilder.class);
+        Process mockedP = mock(Process.class);
+        when(mockedPB.start()).thenReturn(mockedP);
+        when(mockedP.isAlive()).thenReturn(true);
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, mockedPB, mockedLoggerDir) {
+            @Override
+            protected void afterStartProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterStopProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterRestartProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterFinishProcessEvent() {
+
+            }
+        };
+        pr.startProcess();
+        when(mockedP.isAlive()).thenReturn(false);
+        pr.waitForProcess();
+    }
+
+    @Test
+    void unableToStopProcessAfterWaitingForItTest_badTest() throws IOException, ProcessAlreadyStartedException, ProcessCouldNotStartException {
+        ProcessBuilder mockedPB = mock(ProcessBuilder.class);
+        Process mockedP = mock(Process.class);
+        when(mockedPB.start()).thenReturn(mockedP);
+        when(mockedP.isAlive()).thenReturn(true);
+        pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, mockedPB, mockedLoggerDir) {
+            @Override
+            protected void afterStartProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterStopProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterRestartProcessEvent() {
+
+            }
+
+            @Override
+            protected void afterFinishProcessEvent() {
+
+            }
+        };
+        pr.startProcess();
+        assertThrows(ProcessCouldNotStopException.class, () -> pr.waitForProcess(15L));
     }
 }
