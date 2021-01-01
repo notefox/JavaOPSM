@@ -16,8 +16,8 @@ It's for People who either want to just use a out-of-the-box Process Manager for
 ### Why java tho? Why not use C on a System level, or C++, or ...
 I have the belive that Java is a very consistent and direct programming-language. Also nearly everyone I know can read Java code perfectly. Also Java is running itself in a VM, wich means the code will be running on most if not all devices the same way. Also I don't know C well enough. 
 
-## GNU General Public License ? 
-YES! This code base / documantation is and will stay under the GNU General Public License, therefor you can copy the code and use it or write clones with tthe same structure.
+### GNU General Public License ? 
+YES! This code base / documantation is and will stay under the GNU General Public License, therefor you can copy the code and use it or write clones with the same structure.
 
 ### What is the main point of this project ? InterProcess Communication or Module Management
 That is a good question. I kinda started this Project for IPC but you need a reliable way to manage those Processes (modules). So I will first implement the Process(Module) Management and then create the IPC ontop of it.
