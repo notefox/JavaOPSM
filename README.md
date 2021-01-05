@@ -37,7 +37,7 @@ The hard part is letting the Processes talking which each other and finding a st
 There are a couple of ways to implement a interprocess communication:
 
  - over file communication ( no good way found yet )
- - over Database communication ( extra seetups needed )
+ - over Database communication ( extra setups needed )
  - over Socket communication ( easyiest and most reliable communication basis for now, but has it's security downsites )
  - over System InputOutputStream communication ( not really reliable )
  - one time communcation (over the parameter list)
