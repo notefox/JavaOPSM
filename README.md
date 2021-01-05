@@ -26,7 +26,7 @@ That is a good question. I kinda started this Project for IPC but you need a rel
 Implementing a way to do Interprocess Communication between Process for every single process manually can be done. My Goal is to have a reliable construct for instant usage or even just for guidance for other people. Also I'm just interessted in this Project.  
 
 ### Why not just do Thread-based Programming, wouldn't that be just easier?
-...probably
+...probably, but that's not the point of this Project
 
 ### So what's the Plan? 
 
