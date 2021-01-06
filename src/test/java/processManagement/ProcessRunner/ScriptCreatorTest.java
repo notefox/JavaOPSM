@@ -1,6 +1,6 @@
-package ipcOverSockets.ProcessRunner;
+package processManagement.ProcessRunner;
 
-import ipcOverSockets.ProcessExceptions.*;
+import processManagement.ProcessExceptions.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

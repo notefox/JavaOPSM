@@ -1,4 +1,4 @@
-package ipcOverSockets;
+package processManagement;
 
 import java.io.*;
 import java.nio.file.NoSuchFileException;
@@ -120,7 +120,7 @@ public class InitViaFile {
         fw.write(";; [exampleModule]\n");
         fw.write(";; name = processName (needed)\n");
         fw.write(";; file = fileName (needed)\n");
-        fw.write(";; type = single/project/script (needed)\n");
+        fw.write(";; type = single/precompile/script (needed)\n");
         fw.write(";; communication = none/socket (needed)\n");
         fw.write("\n");
         fw.write(";; port = any int (only needed if communication socket)\n");
@@ -132,7 +132,7 @@ public class InitViaFile {
         fw.write(";; (optional)\n");
         fw.write(";; parameter = any\n");
         fw.write(";; build = mvn install (only if type = project, then needed)\n");
-        fw.write(";; target_jar = target/file.jar (only if type = project, then needed)\n");
+        fw.write(";; target = targetFile.jar/targetFile/... (only if type = project, then needed)\n");
         fw.flush();
         fw.close();
 

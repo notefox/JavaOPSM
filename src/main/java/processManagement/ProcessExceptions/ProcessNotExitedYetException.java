@@ -1,4 +1,4 @@
-package ipcOverSockets.ProcessExceptions;
+package processManagement.ProcessExceptions;
 
 public class ProcessNotExitedYetException extends Exception {
     public ProcessNotExitedYetException() {

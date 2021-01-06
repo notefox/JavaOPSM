@@ -1,12 +1,11 @@
-package ipcOverSockets.ProcessRunner;
+package processManagement.ProcessRunner;
 
+import Logger.LogType;
 import Logger.LoggableObject;
-import ipcOverSockets.ProcessExceptions.*;
+import processManagement.ProcessExceptions.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -142,10 +141,20 @@ public abstract class SimpleProcessRunner extends LoggableObject implements Proc
 
         process = pb.start();
         if (!process.isAlive()) {
-            throw new ProcessCouldNotStartException("process was either too fast done than the " +
-                    "check could have been performed or it did not start\n " +
-                    "if you are 100% sure that the process should have started, " +
-                    "try calling startProcessWithoutRunningStartTest()");
+            BufferedReader br = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            if (br.ready()) {
+                StringBuilder sb = new StringBuilder();
+                while (br.ready()) {
+                    sb.append(br.readLine() + "\n");
+                }
+                log(LogType.ERROR, sb.toString());
+                throw new ProcessCouldNotStartException("process ended with an error instantly");
+            } else {
+                throw new ProcessCouldNotStartException("process was either too fast done than the " +
+                        "check could have been performed or it did not start\n " +
+                        "if you are 100% sure that the process should have started, " +
+                        "try calling startProcessWithoutRunningStartTest()");
+            }
         }
         new Thread(() -> {
             try {

@@ -1,4 +1,4 @@
-package ipcOverSockets.ProcessExceptions;
+package processManagement.ProcessExceptions;
 
 public class ExecutableFileInRootDirectoryException extends Throwable {
 	public ExecutableFileInRootDirectoryException() {

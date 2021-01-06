@@ -1,4 +1,4 @@
-package ipcOverSockets.ProcessExceptions;
+package processManagement.ProcessExceptions;
 
 public class InterpreterOrScriptNotDefinedException extends Throwable {
     public InterpreterOrScriptNotDefinedException() {

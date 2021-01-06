@@ -1,4 +1,4 @@
-package ipcOverSockets.ProcessExceptions;
+package processManagement.ProcessExceptions;
 
 public class ProcessAlreadyStartedException extends Throwable {
     public ProcessAlreadyStartedException() {

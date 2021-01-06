@@ -1,6 +1,6 @@
-package ipcOverSockets.ProcessRunner;
+package processManagement.ProcessRunner;
 
-import ipcOverSockets.ProcessExceptions.ProcessAlreadyStartedException;
+import processManagement.ProcessExceptions.ProcessAlreadyStartedException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;

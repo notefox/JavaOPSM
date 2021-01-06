@@ -1,12 +1,10 @@
-package ipcOverSockets.ProcessRunnerTemplates;
+package processManagement.ProcessRunnerTemplates;
 
-import ipcOverSockets.ProcessExceptions.ExecutableFileInRootDirectoryException;
-import ipcOverSockets.ProcessExceptions.InterpreterOrScriptNotDefinedException;
-import ipcOverSockets.ProcessExceptions.ProcessAlreadyStartedException;
-import ipcOverSockets.ProcessExceptions.ProcessCouldNotStartException;
-import ipcOverSockets.ProcessRunner.ProcessRunnerType;
-import ipcOverSockets.ProcessRunner.ScriptCreator;
-import ipcOverSockets.ProcessRunner.SimpleProcessRunner;
+import processManagement.ProcessExceptions.ExecutableFileInRootDirectoryException;
+import processManagement.ProcessExceptions.InterpreterOrScriptNotDefinedException;
+import processManagement.ProcessRunner.ProcessRunnerType;
+import processManagement.ProcessRunner.ScriptCreator;
+import processManagement.ProcessRunner.SimpleProcessRunner;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -45,7 +43,7 @@ public class JavaMavenRunnerTemplate {
         SimpleProcessRunner spc = null;
         try {
             ProcessBuilder pb = sc.buildRunnableProcessBuilder();
-            spc = new SimpleProcessRunner("maven template", ProcessRunnerType.PROJECT_RUNNER ,pb, null) {
+            spc = new SimpleProcessRunner("maven template", ProcessRunnerType.PRECOMPILE_RUNNER ,pb, new File("logger")) {
                 @Override
                 protected void afterStartProcessEvent() {
                     //

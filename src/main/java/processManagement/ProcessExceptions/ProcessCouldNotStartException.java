@@ -1,4 +1,4 @@
-package ipcOverSockets.ProcessExceptions;
+package processManagement.ProcessExceptions;
 
 public class ProcessCouldNotStartException extends Throwable {
     public ProcessCouldNotStartException() {

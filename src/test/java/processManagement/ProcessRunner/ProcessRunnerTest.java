@@ -1,19 +1,18 @@
-package ipcOverSockets.ProcessRunner;
+package processManagement.ProcessRunner;
 
-import ipcOverSockets.ProcessExceptions.*;
+import processManagement.ProcessExceptions.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Documented;
-import java.lang.reflect.Executable;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.chrono.ThaiBuddhistEra;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -375,8 +374,8 @@ class ProcessRunnerTest {
                 finishEvent.start();
             }
         };
+        pr.startProcess();
         Thread.sleep(1);
-        pr.startProcessWithoutRunningStartTest();
         verify(startEvent, times(1)).start();
         verify(finishEvent, times(1)).start();
     }
@@ -475,6 +474,8 @@ class ProcessRunnerTest {
         Process mockedP = mock(Process.class);
         when(mockedPB.start()).thenReturn(mockedP);
         when(mockedP.isAlive()).thenReturn(false);
+        String errorMessage = "yeah, this did not start";
+        when(mockedP.getErrorStream()).thenReturn(new ByteArrayInputStream(errorMessage.getBytes(StandardCharsets.UTF_8)));
         pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, mockedPB, mockedLoggerDir) {
             @Override
             protected void afterStartProcessEvent() {
@@ -505,6 +506,12 @@ class ProcessRunnerTest {
         Process mockedP = mock(Process.class);
         when(mockedPB.start()).thenReturn(mockedP);
         when(mockedP.isAlive()).thenReturn(false);
+        when(mockedP.getErrorStream()).thenReturn(new InputStream() {
+            @Override
+            public int read() throws IOException {
+                return 0;
+            }
+        });
         pr = new SimpleProcessRunner("test", ProcessRunnerType.CUSTOM, mockedPB, mockedLoggerDir) {
             @Override
             protected void afterStartProcessEvent() {

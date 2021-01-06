@@ -1,6 +1,6 @@
-package ipcOverSockets.ProcessRunner;
+package processManagement.ProcessRunner;
 
-import ipcOverSockets.ProcessExceptions.ProcessIsNotAliveException;
+import processManagement.ProcessExceptions.ProcessIsNotAliveException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInputStream;

@@ -1,10 +1,9 @@
-package ipcOverSockets.ProcessRunner;
+package processManagement.ProcessRunner;
 
 import Logger.LogType;
 import Logger.LoggableObject;
-import ipcOverSockets.ProcessExceptions.InterpreterOrScriptNotDefinedException;
-import ipcOverSockets.ProcessExceptions.ExecutableFileInRootDirectoryException;
-import org.jetbrains.annotations.NotNull;
+import processManagement.ProcessExceptions.InterpreterOrScriptNotDefinedException;
+import processManagement.ProcessExceptions.ExecutableFileInRootDirectoryException;
 
 import java.io.File;
 import java.io.FileWriter;

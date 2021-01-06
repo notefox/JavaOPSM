@@ -1,8 +1,9 @@
-package ipcOverSockets.ProcessRunnerTemplates;
+package processManagement.ProcessRunnerTemplates;
 
-import ipcOverSockets.ProcessRunner.ProcessRunnerType;
-import ipcOverSockets.ProcessRunner.SimpleProcessRunner;
+import processManagement.ProcessRunner.ProcessRunnerType;
+import processManagement.ProcessRunner.SimpleProcessRunner;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -12,7 +13,7 @@ public class PythonScriptTemplate {
         commandList.add("singleFile/python");
         commandList.add("modules/SingleFile/Python/singleFilePythonExample.py");
         commandList.add("someFile.txt");
-        SimpleProcessRunner spr = new SimpleProcessRunner("python template", ProcessRunnerType.SCRIPT_RUNNER, commandList, null) {
+        SimpleProcessRunner spr = new SimpleProcessRunner("python template", ProcessRunnerType.SCRIPT_RUNNER, commandList, new File("logger")) {
             @Override
             protected void afterStartProcessEvent() {
             }

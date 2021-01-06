@@ -1,7 +1,8 @@
-package ipcOverSockets.ProcessRunnerTemplates;
+package processManagement.ProcessRunnerTemplates;
 
-import ipcOverSockets.ProcessRunner.SocketCommunicationProcessRunner;
+import processManagement.ProcessRunner.SocketCommunicationProcessRunner;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class JavaSocketCommunicationTemplate {
         commandList.add("port:" + port);
         assert server != null;
         try {
-            pro = new SocketCommunicationProcessRunner("java socket template", server,null,  commandList);
+            pro = new SocketCommunicationProcessRunner("java socket template", server,new File("logger"),  commandList);
         } catch (IOException e) {
             e.printStackTrace();
         }

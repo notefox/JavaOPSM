@@ -1,9 +1,8 @@
-package ipcOverSockets.ProcessRunner;
+package processManagement.ProcessRunner;
 
-import ipcOverSockets.ProcessExceptions.*;
+import processManagement.ProcessExceptions.*;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 public interface ProcessRunner {
