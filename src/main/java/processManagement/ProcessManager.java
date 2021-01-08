@@ -122,4 +122,32 @@ public class ProcessManager extends LoggableObject {
             e.printStackTrace();
         }
     }
+
+    public void waitForAll() throws InterruptedException {
+        for (SimpleProcessRunner pr : getAllModules()) {
+            pr.waitForProcess();
+        }
+    }
+
+    public void waitForAll(long i) {
+        ArrayList<Thread> waitingList = new ArrayList<>();
+        for (SimpleProcessRunner pr : getAllModules()) {
+            Thread t = new Thread(() -> {
+                try {
+                    pr.waitForProcess(i);
+                } catch (InterruptedException | ProcessIsNotAliveException | ProcessCouldNotStopException e) {
+                    e.printStackTrace();
+                }
+            });
+            t.start();
+            waitingList.add(t);
+        }
+        waitingList.forEach(x -> {
+            try {
+                x.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+    }
 }

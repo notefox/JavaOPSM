@@ -1,6 +1,8 @@
 package processManagement.ProcessRunner;
 
+import Logger.LogType;
 import processManagement.ProcessExceptions.ProcessAlreadyStartedException;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -25,21 +27,21 @@ public class DirectCommandRunner extends SimpleProcessRunner {
 
     @Override
     protected void afterStartProcessEvent() {
-        //
+        log(LogType.INFO, "running " + this.getCommand().get(0));
     }
 
     @Override
     protected void afterStopProcessEvent() {
-        //
+        log(LogType.INFO, "stopped " + this.getCommand().get(0));
     }
 
     @Override
     protected void afterRestartProcessEvent() {
-        //
+        log(LogType.INFO, "restarted " + this.getCommand().get(0));
     }
 
     @Override
     protected void afterFinishProcessEvent() {
-
+        log(LogType.INFO, "finished " + this.getCommand().get(0));
     }
 }

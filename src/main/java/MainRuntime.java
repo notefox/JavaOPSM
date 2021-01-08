@@ -1,3 +1,4 @@
+import Controller.ConsoleController;
 import Logger.LogType;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,8 +13,7 @@ import processManagement.ProcessRunner.ScriptCreator;
 import processManagement.ProcessRunner.SimpleProcessRunner;
 import processManagement.ProcessRunner.SocketCommunicationProcessRunner;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,19 +45,13 @@ public class MainRuntime {
      * main executive method
      * @param args given arguments while execution
      */
-    public static void main(String[] args) throws ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException {
+    public static void main(String[] args) throws ProcessCouldNotStartException, ProcessAlreadyStartedException, IOException, InterruptedException {
         try {
             initIntoManager();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        manager.getAllModulesOfGroup("testGroup").forEach(System.out::println);
-        // manager.stopAllRunningProcesses();
-        // manager.runAllScripts();
-        // manager.runAll();
-        // manager.getModulesOfName("cProgram").get(0).startProcess();
-        manager.runModule("default", "javaWebsocket");
-        System.exit(0);
+        ConsoleController.giveManager(manager);
     }
 
     /**
@@ -251,22 +245,74 @@ public class MainRuntime {
             spr = new SimpleProcessRunner(name, ProcessRunnerType.SCRIPT_RUNNER, commandList, loggerDir) {
                 @Override
                 protected void afterStartProcessEvent() {
-                    log(LogType.INFO, "process started");
+                    try {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(this.getProcessInputStream()));
+                        BufferedReader be = new BufferedReader(new InputStreamReader(this.getProcessErrorStream()));
+                        while (br.ready()) {
+                            log(LogType.DEBUG, br.readLine());
+                        }
+                        while (br.ready()) {
+                            log(LogType.DEBUG, be.readLine());
+                        }
+                    } catch (IOException e) {
+                        log(LogType.ERROR, "failed to finish reading output/error from " + this.getName());
+                    } finally {
+                        log(LogType.INFO, "process started");
+                    }
                 }
 
                 @Override
                 protected void afterStopProcessEvent() {
-                    log(LogType.INFO, "process stopped");
+                    try {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(this.getProcessInputStream()));
+                        BufferedReader be = new BufferedReader(new InputStreamReader(this.getProcessErrorStream()));
+                        while (br.ready()) {
+                            log(LogType.DEBUG, br.readLine());
+                        }
+                        while (br.ready()) {
+                            log(LogType.DEBUG, be.readLine());
+                        }
+                    } catch (IOException e) {
+                        log(LogType.ERROR, "failed to finish reading output/error from " + this.getName());
+                    } finally {
+                        log(LogType.INFO, "process stopped");
+                    }
                 }
 
                 @Override
                 protected void afterRestartProcessEvent() {
-                    log(LogType.INFO, "process restarted");
+                    try {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(this.getProcessInputStream()));
+                        BufferedReader be = new BufferedReader(new InputStreamReader(this.getProcessErrorStream()));
+                        while (br.ready()) {
+                            log(LogType.DEBUG, br.readLine());
+                        }
+                        while (br.ready()) {
+                            log(LogType.DEBUG, be.readLine());
+                        }
+                    } catch (IOException e) {
+                        log(LogType.ERROR, "failed to finish reading output/error from " + this.getName());
+                    } finally {
+                        log(LogType.INFO, "process restarted");
+                    }
                 }
 
                 @Override
                 protected void afterFinishProcessEvent() {
-                    log(LogType.INFO, "process finished");
+                    try {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(this.getProcessInputStream()));
+                        BufferedReader be = new BufferedReader(new InputStreamReader(this.getProcessErrorStream()));
+                        while (br.ready()) {
+                            log(LogType.DEBUG, br.readLine());
+                        }
+                        while (br.ready()) {
+                            log(LogType.DEBUG, be.readLine());
+                        }
+                    } catch (IOException e) {
+                        log(LogType.ERROR, "failed to finish reading output/error from " + this.getName());
+                    } finally {
+                        log(LogType.INFO, "process finished");
+                    }
                 }
             };
         } catch (IOException e) {
@@ -305,22 +351,74 @@ public class MainRuntime {
             spr = new SimpleProcessRunner(name, pRType, commandList, loggerDir) {
                 @Override
                 protected void afterStartProcessEvent() {
-                    log(LogType.INFO, "process started");
+                    try {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(this.getProcessInputStream()));
+                        BufferedReader be = new BufferedReader(new InputStreamReader(this.getProcessErrorStream()));
+                        while (br.ready()) {
+                            log(LogType.DEBUG, br.readLine());
+                        }
+                        while (br.ready()) {
+                            log(LogType.DEBUG, be.readLine());
+                        }
+                    } catch (IOException e) {
+                        log(LogType.ERROR, "failed to finish reading output/error from " + this.getName());
+                    } finally {
+                        log(LogType.INFO, "process started");
+                    }
                 }
 
                 @Override
                 protected void afterStopProcessEvent() {
-                    log(LogType.INFO, "process stopped");
+                    try {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(this.getProcessInputStream()));
+                        BufferedReader be = new BufferedReader(new InputStreamReader(this.getProcessErrorStream()));
+                        while (br.ready()) {
+                            log(LogType.DEBUG, br.readLine());
+                        }
+                        while (br.ready()) {
+                            log(LogType.DEBUG, be.readLine());
+                        }
+                    } catch (IOException e) {
+                        log(LogType.ERROR, "failed to finish reading output/error from " + this.getName());
+                    } finally {
+                        log(LogType.INFO, "process stopped");
+                    }
                 }
 
                 @Override
                 protected void afterRestartProcessEvent() {
-                    log(LogType.INFO, "process restarted");
+                    try {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(this.getProcessInputStream()));
+                        BufferedReader be = new BufferedReader(new InputStreamReader(this.getProcessErrorStream()));
+                        while (br.ready()) {
+                            log(LogType.DEBUG, br.readLine());
+                        }
+                        while (br.ready()) {
+                            log(LogType.DEBUG, be.readLine());
+                        }
+                    } catch (IOException e) {
+                        log(LogType.ERROR, "failed to finish reading output/error from " + this.getName());
+                    } finally {
+                        log(LogType.INFO, "process restarted");
+                    }
                 }
 
                 @Override
                 protected void afterFinishProcessEvent() {
-                    log(LogType.INFO, "process finished");
+                    try {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(this.getProcessInputStream()));
+                        BufferedReader be = new BufferedReader(new InputStreamReader(this.getProcessErrorStream()));
+                        while (br.ready()) {
+                            log(LogType.DEBUG, br.readLine());
+                        }
+                        while (br.ready()) {
+                            log(LogType.DEBUG, be.readLine());
+                        }
+                    } catch (IOException e) {
+                        log(LogType.ERROR, "failed to finish reading output/error from " + this.getName());
+                    } finally {
+                        log(LogType.INFO, "process finished");
+                    }
                 }
             };
         } catch (IOException e) {
@@ -360,22 +458,74 @@ public class MainRuntime {
             spr = new SimpleProcessRunner(name, ProcessRunnerType.PRECOMPILE_RUNNER, buildScript.buildRunnableProcessBuilder(), loggerDir) {
                 @Override
                 protected void afterStartProcessEvent() {
-                    log(LogType.INFO, "process started");
+                    try {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(this.getProcessInputStream()));
+                        BufferedReader be = new BufferedReader(new InputStreamReader(this.getProcessErrorStream()));
+                        while (br.ready()) {
+                            log(LogType.DEBUG, br.readLine());
+                        }
+                        while (br.ready()) {
+                            log(LogType.DEBUG, be.readLine());
+                        }
+                    } catch (IOException e) {
+                        log(LogType.ERROR, "failed to finish reading output/error from " + this.getName());
+                    } finally {
+                        log(LogType.INFO, "process started");
+                    }
                 }
 
                 @Override
                 protected void afterStopProcessEvent() {
-                    log(LogType.INFO, "process stopped");
+                    try {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(this.getProcessInputStream()));
+                        BufferedReader be = new BufferedReader(new InputStreamReader(this.getProcessErrorStream()));
+                        while (br.ready()) {
+                            log(LogType.DEBUG, br.readLine());
+                        }
+                        while (br.ready()) {
+                            log(LogType.DEBUG, be.readLine());
+                        }
+                    } catch (IOException e) {
+                        log(LogType.ERROR, "failed to finish reading output/error from " + this.getName());
+                    } finally {
+                        log(LogType.INFO, "process stopped");
+                    }
                 }
 
                 @Override
                 protected void afterRestartProcessEvent() {
-                    log(LogType.INFO, "process restarted");
+                    try {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(this.getProcessInputStream()));
+                        BufferedReader be = new BufferedReader(new InputStreamReader(this.getProcessErrorStream()));
+                        while (br.ready()) {
+                            log(LogType.DEBUG, br.readLine());
+                        }
+                        while (br.ready()) {
+                            log(LogType.DEBUG, be.readLine());
+                        }
+                    } catch (IOException e) {
+                        log(LogType.ERROR, "failed to finish reading output/error from " + this.getName());
+                    } finally {
+                        log(LogType.INFO, "process restarted");
+                    }
                 }
 
                 @Override
                 protected void afterFinishProcessEvent() {
-                    log(LogType.INFO, "process finished");
+                    try {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(this.getProcessInputStream()));
+                        BufferedReader be = new BufferedReader(new InputStreamReader(this.getProcessErrorStream()));
+                        while (br.ready()) {
+                            log(LogType.DEBUG, br.readLine());
+                        }
+                        while (br.ready()) {
+                            log(LogType.DEBUG, be.readLine());
+                        }
+                    } catch (IOException e) {
+                        log(LogType.ERROR, "failed to finish reading output/error from " + this.getName());
+                    } finally {
+                        log(LogType.INFO, "process finished");
+                    }
                 }
             };
         } catch (InterpreterOrScriptNotDefinedException | IOException e) {
