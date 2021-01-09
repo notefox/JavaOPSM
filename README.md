@@ -1,4 +1,5 @@
 # JavaOPSM ( "on-the-fly" Process Servicing and Management )
+
 This Project will be my first take on Process-Module based Programming in Java.
 
 The end-point of this project is to have a process manager with "hot-swappable" process code bases, which means changing a line in a code base of a process can be instantly included into a running system. Also InterProcess Communication between the Processes of course.
@@ -41,3 +42,4 @@ There are a couple of ways to implement a interprocess communication:
  - over Socket communication ( easyiest and most reliable communication basis for now, but has it's security downsites )
  - over System InputOutputStream communication ( not really reliable )
  - one time communcation (over the parameter list)
+
