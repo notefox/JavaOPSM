@@ -1,15 +1,14 @@
 package processManagement;
 
-import Logger.LogType;
-import Logger.LoggableObject;
+import logger.LogType;
+import logger.LoggableObject;
 import org.jetbrains.annotations.NotNull;
-import processManagement.ProcessExceptions.ProcessAlreadyStartedException;
-import processManagement.ProcessExceptions.ProcessCouldNotStartException;
-import processManagement.ProcessExceptions.ProcessCouldNotStopException;
-import processManagement.ProcessExceptions.ProcessIsNotAliveException;
-import processManagement.ProcessRunner.ProcessRunner;
-import processManagement.ProcessRunner.ProcessRunnerType;
-import processManagement.ProcessRunner.SimpleProcessRunner;
+import processManagement.processExceptions.ProcessAlreadyStartedException;
+import processManagement.processExceptions.ProcessCouldNotStartException;
+import processManagement.processExceptions.ProcessCouldNotStopException;
+import processManagement.processExceptions.ProcessIsNotAliveException;
+import processManagement.processRunner.constructObject.ProcessRunnerType;
+import processManagement.processRunner.constructObject.SimpleProcessRunner;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +34,7 @@ public class ProcessManager extends LoggableObject {
 
     public void addModule(@NotNull String name, @NotNull SimpleProcessRunner pr) { addModule("default", name, pr); }
 
-    public SimpleProcessRunner getModuleOfNameInGroup(String group, String name) {
+    public SimpleProcessRunner getModuleOfGroupWithName(String group, String name) {
         return processesInGroups.get(group).get(name);
     }
 
@@ -49,7 +48,7 @@ public class ProcessManager extends LoggableObject {
         return listOfRunners;
     }
 
-    public List<SimpleProcessRunner> getAllModulesOfGroup(String group) {
+    public List<SimpleProcessRunner> getModulesOfGroup(String group) {
         ArrayList<SimpleProcessRunner> returner = new ArrayList<>();
         processesInGroups.get(group).keySet().stream().map(processesInGroups.get(group)::get).forEach(returner::add);
         return returner;
@@ -65,14 +64,14 @@ public class ProcessManager extends LoggableObject {
         return returner;
     }
 
-    public void stopAllRunningProcesses() {
+    public void stopAll() {
         log(LogType.INFO, "stopping all running processes started");
         getAllModules().forEach(module -> {
             try {
                 if (module.isProcessAlive()) {
                     module.stopProcess();
+                    log(LogType.INFO, module + " was stopped");
                 }
-                log(LogType.INFO, module + " was stopped");
             } catch (InterruptedException e) {
                 log(LogType.ERROR, "(manager) I was interrupted while stopping | please check manually if this " +
                         "manager is still running / existing");
@@ -149,5 +148,135 @@ public class ProcessManager extends LoggableObject {
                 e.printStackTrace();
             }
         });
+    }
+
+    public List<SimpleProcessRunner> getModulesOfType(ProcessRunnerType type) {
+        ArrayList<SimpleProcessRunner> returner = new ArrayList<>();
+        getAllModules().stream().filter(x -> x.getType().equals(type)).forEach(returner::add);
+        return returner;
+    }
+
+    public void runAllModulesOfType(ProcessRunnerType type) {
+        getModulesOfType(type).forEach((x) -> {
+            try {
+                x.startProcess();
+            } catch (IOException | ProcessCouldNotStartException | ProcessAlreadyStartedException e) {
+                System.err.println(e.getMessage());
+            }
+        });
+    }
+
+    public void runAllModulesOfName(String name) {
+        getModulesOfName(name).forEach(x -> {
+            try {
+                x.startProcess();
+            } catch (IOException | ProcessCouldNotStartException | ProcessAlreadyStartedException e) {
+                System.err.println(e.getMessage());
+            }
+        });
+    }
+
+    public void runAllModulesOfGroup(String group) {
+        getModulesOfGroup(group).forEach(x -> {
+            try {
+                x.startProcess();
+            } catch (IOException | ProcessCouldNotStartException | ProcessAlreadyStartedException e) {
+                System.err.println(e.getMessage());
+            }
+        });
+    }
+
+    public void startSpecificModule(String group, String name) {
+        try {
+            getModuleOfGroupWithName(group, name).startProcess();
+        } catch (IOException | ProcessCouldNotStartException | ProcessAlreadyStartedException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    public void stopAllModulesWithType(ProcessRunnerType type) {
+        getModulesOfType(type).stream().filter(SimpleProcessRunner::isProcessAlive).forEach(x -> {
+            try {
+                x.stopProcess();
+            } catch (ProcessIsNotAliveException | ProcessCouldNotStopException | InterruptedException e) {
+                System.err.println(e.getMessage());
+            }
+        });
+    }
+
+    public void stopAllModulesOfGroup(String group) {
+        getModulesOfGroup(group).stream().filter(SimpleProcessRunner::isProcessAlive).forEach( x -> {
+            try {
+                x.stopProcess();
+            } catch (ProcessIsNotAliveException | ProcessCouldNotStopException | InterruptedException e) {
+                System.err.println(e.getMessage());
+            }
+        });
+    }
+
+    public void stopSpecificModule(String group, String name) {
+        try {
+            getModuleOfGroupWithName(group, name).stopProcess();
+        } catch (ProcessIsNotAliveException | ProcessCouldNotStopException | InterruptedException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    public void restartAll() {
+        getAllModules().stream().filter(SimpleProcessRunner::isProcessAlive).forEach(x -> {
+            try {
+                x.restartProcess();
+            } catch (ProcessIsNotAliveException | ProcessCouldNotStopException | IOException | ProcessCouldNotStartException | ProcessAlreadyStartedException | InterruptedException e) {
+                System.err.println(e.getMessage());
+            }
+        });
+    }
+
+    public void restartAllModulesOfType(ProcessRunnerType type) {
+        getModulesOfType(type).stream().filter(SimpleProcessRunner::isProcessAlive).forEach(x -> {
+            try {
+                x.restartProcess();
+            } catch (ProcessIsNotAliveException | ProcessCouldNotStopException | IOException | ProcessCouldNotStartException | ProcessAlreadyStartedException | InterruptedException e) {
+                System.err.println(e.getMessage());
+            }
+        });
+    }
+
+    public void restartAllModulesOfGroup(String group) {
+        getModulesOfGroup(group).stream().filter(SimpleProcessRunner::isProcessAlive).forEach(x -> {
+            try {
+                x.restartProcess();
+            } catch (ProcessIsNotAliveException | ProcessCouldNotStopException | IOException | ProcessCouldNotStartException | ProcessAlreadyStartedException | InterruptedException e) {
+                System.err.println(e.getMessage());
+            }
+        });
+    }
+
+    public void restartSpecificModule(String group, String name) {
+        try {
+            getModuleOfGroupWithName(group, name).restartProcess();
+        } catch (ProcessIsNotAliveException | ProcessCouldNotStopException | IOException | ProcessCouldNotStartException | ProcessAlreadyStartedException | InterruptedException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("StringConcatenationInsideStringBufferAppend")
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("number of existing Processes : " + getAllModules().size() + "\n");
+        sb.append("existing groups : \n");
+        getAllExistingGroups().forEach(x -> {
+            sb.append(" - " + x + " | nbr of Modules -> " + getModulesOfGroup(x).size() + "\n");
+        });
+        return sb.toString();
+    }
+
+    public List<String> getAllExistingGroups() {
+        return new ArrayList<>(processesInGroups.keySet());
+    }
+
+    public void updateModule(String group, String name, HashMap<String, String> updatedMap) {
+        getModuleOfGroupWithName(group, name).update(updatedMap);
     }
 }
